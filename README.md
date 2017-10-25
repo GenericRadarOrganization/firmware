@@ -14,8 +14,12 @@ Firmware for the teensy-lc microcontroller board.
 1. VCO Control Waveform Output:
    * Must be able to output a voltage waveform using DAC
    * Must have a configurable waveform shape (Saw, triangle, sine, etc.)
+   * Must have a configurable, consistent output period
    * TBD
 2. Down-Mixed Waveform Input:
+   * Must have a confirugable, consisten sample period
+   * Must alternate between capture and compute phases
+   * Should use DMA channel to collect ADC data
    * TBD
 3. User Interface:
    * Must allow configuration of voltage waveform
