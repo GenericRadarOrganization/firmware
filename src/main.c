@@ -37,6 +37,8 @@
 #include "fixup.h"
 #include "usb_device_config.h"
 #include "usb.h"
+#include "systick.h"
+#include "tsk.h"
 #include "usb_device_stack_interface.h"
 #include "virtual_com.h"
 
@@ -44,11 +46,6 @@
  * Constant and Macro's - None
  *****************************************************************************/
 #define LED  (1U << 5)
-
-/*****************************************************************************
- * Global Functions Prototypes
- *****************************************************************************/
-void TestApp_Init(void);
 
 /****************************************************************************
  * Global Variables
@@ -330,31 +327,6 @@ void APP_init(void)
     g_send_size = 0;    
 }
 
-/*****************************************************************************
- *  
- *   @name        APP_task
- * 
- *   @brief       This function runs APP task.
- *   @param       None
- * 
- *   @return      None
- **                
- *****************************************************************************/
-void APP_task(void)
-{
-    while (TRUE)
-    {
-        /* call the periodic task function */
-        USB_CDC_Periodic_Task();
-
-        /*check whether enumeration is complete or not */
-        if ((start_app == TRUE) && (start_transactions == TRUE))
-        {
-            Virtual_Com_App();
-        }
-    }/* Endwhile */
-}
-
 /******************************************************************************
  * 
  *    @name       Virtual_Com_App
@@ -561,10 +533,21 @@ uint8_t USB_App_Class_Callback
 int main(void)
 {
     SIM->SCGC4 |= SIM_SCGC4_USBOTG_MASK;
+    systick_init();
+    tsk_init();
     APP_init();
 
-    APP_task();
+    while(1){
+        /* call the periodic task function */
+        USB_CDC_Periodic_Task();
 
+        /*check whether enumeration is complete or not */
+        if ((start_app == TRUE) && (start_transactions == TRUE))
+        {
+            Virtual_Com_App();
+        }
+        tsk_main();
+    }
     return 1;
 }
 

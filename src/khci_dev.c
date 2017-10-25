@@ -1423,6 +1423,8 @@ usb_status usb_dci_khci_init
     usb_hal_khci_set_trc0(usb_dev_ptr->usbRegBase); /* Software must set this bit to 1 */
     /* setup interrupt */
     //OS_intr_init((IRQn_Type)soc_get_usb_vector_number(controller_id), soc_get_usb_dev_int_level(controller_id), 0, TRUE);
+    USB0->INTEN |= 0xFF; // Enable all interrupts?
+    NVIC_ClearPendingIRQ(USB0_IRQn);
     NVIC_EnableIRQ(USB0_IRQn);
 #ifndef USBCFG_OTG 
     /* Install the ISR
