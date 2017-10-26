@@ -489,7 +489,7 @@ void* arg
     ep_struct.type = USB_CONTROL_PIPE;
 
     usb_device_init_endpoint(event->handle, &ep_struct, TRUE);
-
+    
     ep_struct.direction = USB_SEND;
     usb_device_init_endpoint(event->handle, &ep_struct, TRUE);
     temp = usb_fw_ptr->device_notify_param;

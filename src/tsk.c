@@ -28,7 +28,7 @@ static void idle_init()
 static void idle_poll()
 {
     // Toggle LED
-    PTC->PTOR = LED;
+    //PTC->PTOR = LED;
 }
 
 static task_t task_table[] = {
@@ -46,7 +46,6 @@ void tsk_init(void){
 
 void tsk_main(void){
     uint8_t i;
-
     for(i=0;i<cnt_of_array(task_table);i++)
     {
         if(task_table[i].next_run<=millis()){
@@ -54,7 +53,7 @@ void tsk_main(void){
             task_table[i].main();
             
             // Mark next run time
-            task_table[i].next_run+=task_table[i].period;
+            task_table[i].next_run=millis()+task_table[i].period;
         }
     }
 }

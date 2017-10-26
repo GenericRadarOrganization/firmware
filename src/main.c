@@ -539,7 +539,7 @@ int main(void)
 
     while(1){
         /* call the periodic task function */
-        USB_CDC_Periodic_Task();
+        USB_CDC_Periodic_Task(); // This doesn't actually do anything
 
         /*check whether enumeration is complete or not */
         if ((start_app == TRUE) && (start_transactions == TRUE))

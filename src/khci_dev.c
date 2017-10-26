@@ -130,9 +130,9 @@ uint8_t bdt_table[512];
 #endif
 #endif
 
-#if ((OS_ADAPTER_ACTIVE_OS == OS_ADAPTER_SDK))
-    static usb_device_khci_data_t g_khci_data;
-#endif
+//#if ((OS_ADAPTER_ACTIVE_OS == OS_ADAPTER_SDK))
+static usb_device_khci_data_t g_khci_data;
+//#endif
 
 static bool g_zero_pkt_send = FALSE;
 
@@ -277,20 +277,17 @@ usb_status usb_dci_khci_init_xd
 )
 {
     usb_khci_dev_state_struct_t* usb_dev_ptr = (usb_khci_dev_state_struct_t*)handle;
-#if ((OS_ADAPTER_ACTIVE_OS == OS_ADAPTER_SDK))
     xd_struct_t* xd_ptr;
     uint32_t j;
 
-
     usb_dev_ptr->setup_buff = (uint8_t *)(&g_khci_data.setup_packet);
     usb_dev_ptr->xd_head = usb_dev_ptr->xd_base = (xd_struct_t*)(&g_khci_data.xd_base);
-#endif
+
 #if FSL_FEATURE_USB_KHCI_USB_RAM
     usb_dev_ptr->setup_buff = (uint8_t *)(usb_hal_khci_get_usbram_add(usb_dev_ptr->usbRegBase) + 480);
 #endif
     usb_dev_ptr->xd_entries = USBCFG_DEV_MAX_XDS;
-    
-    #if ((OS_ADAPTER_ACTIVE_OS == OS_ADAPTER_SDK))
+
     /* Enqueue all the XDs */
     xd_ptr = (xd_struct_t*)usb_dev_ptr->xd_base;
 
@@ -302,7 +299,7 @@ usb_status usb_dci_khci_init_xd
     }
     xd_ptr->next = 0;
     usb_dev_ptr->xd_tail = xd_ptr;
-    #endif
+
     return USB_OK;
 }
 
@@ -800,7 +797,7 @@ static void _usb_khci_service_tk_dne_intr
     uint8_t *src, *dst = NULL;
 #endif
     usb_event_struct_t event;
-
+    
     /* Get the status of previous transaction*/
     stat = usb_hal_khci_get_transfer_status(state_ptr->usbRegBase);
 
@@ -1423,7 +1420,8 @@ usb_status usb_dci_khci_init
     usb_hal_khci_set_trc0(usb_dev_ptr->usbRegBase); /* Software must set this bit to 1 */
     /* setup interrupt */
     //OS_intr_init((IRQn_Type)soc_get_usb_vector_number(controller_id), soc_get_usb_dev_int_level(controller_id), 0, TRUE);
-    USB0->INTEN |= 0xFF; // Enable all interrupts?
+    USB0->INTEN = USB_INTEN_TOKDNEEN_MASK | USB_INTEN_USBRSTEN_MASK |
+                   USB_INTEN_SOFTOKEN_MASK | USB_INTEN_STALLEN_MASK; // Enable all interrupts?
     NVIC_ClearPendingIRQ(USB0_IRQn);
     NVIC_EnableIRQ(USB0_IRQn);
 #ifndef USBCFG_OTG 

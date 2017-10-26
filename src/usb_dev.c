@@ -780,7 +780,7 @@ usb_status usb_device_init_endpoint
     xd.dont_zero_terminate = flag;
     xd.wtotallength = 0;
     xd.wsofar = 0;
-
+    
     if ((usb_dev_ptr->usb_dev_interface)->dev_init_endoint != NULL)
     {
         error=(usb_dev_ptr->usb_dev_interface)->dev_init_endoint(usb_dev_ptr->controller_handle, &xd);
