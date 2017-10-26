@@ -3,10 +3,11 @@
 
 #define PIT_TIMER_PERIOD 0xBB80-1; // ie 48000 (Should theoretically give a 1000Hz interrupt)
 #define LED  (1U << 5)
-uint32_t ticks;
+
+volatile uint32_t systick_millis_count;
 
 void systick_init(void){
-    ticks = 0;
+    systick_millis_count = 0;
     // Enable PIT Clock
     //SIM->SCGC6 |= SIM_SCGC6_PIT_MASK;
 
@@ -24,7 +25,7 @@ void systick_init(void){
 }
 
 uint32_t millis(void){
-    return ticks;
+    return systick_millis_count;
 }
 void systick_isr(void){
     //Check if interrupt caused by this timer
@@ -33,5 +34,5 @@ void systick_isr(void){
     //    PIT->CHANNEL[0].TCTRL &= ~PIT_TCTRL_TEN_MASK;
     //    PIT->CHANNEL[0].TCTRL |= PIT_TCTRL_TEN_MASK;
     //}
-    ticks++;
+    systick_millis_count++;
 }

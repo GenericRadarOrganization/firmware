@@ -8,7 +8,7 @@ MCU=MKL26Z64
 MCU_LD = $(MCU).ld
 
 # configurable options
-OPTIONS = -DF_CPU=48000000 -D__$(MCU)__ 
+OPTIONS = -DF_CPU=48000000 -D__$(MCU)__ -DUSB_SERIAL
 
 # CPPFLAGS = compiler options for C and C++
 CPPFLAGS = -Wall -Werror -mthumb -g -MMD $(OPTIONS) -I./inc -mcpu=cortex-m0plus -nostdlib -fsingle-precision-constant

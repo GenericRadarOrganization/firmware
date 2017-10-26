@@ -1,6 +1,9 @@
 {
     "files.associations": {
         "helpers.h": "c",
-        "mkl26z4.h": "c"
+        "mkl26z4.h": "c",
+        "core_pins.h": "c",
+        "stdlib.h": "c",
+        "cstdlib": "c"
     }
 }

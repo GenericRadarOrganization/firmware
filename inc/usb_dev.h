@@ -1,126 +1,137 @@
-/**HEADER********************************************************************
-* 
-* Copyright (c) 2008, 2013 - 2014 Freescale Semiconductor;
-* All Rights Reserved
-*
-* Copyright (c) 1989-2008 ARC International;
-* All Rights Reserved
-*
-*************************************************************************** 
-*
-* THIS SOFTWARE IS PROVIDED BY FREESCALE "AS IS" AND ANY EXPRESSED OR 
-* IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES 
-* OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.  
-* IN NO EVENT SHALL FREESCALE OR ITS CONTRIBUTORS BE LIABLE FOR ANY DIRECT, 
-* INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES 
-* (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR 
-* SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) 
-* HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, 
-* STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING 
-* IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF 
-* THE POSSIBILITY OF SUCH DAMAGE.
-*
-**************************************************************************
-*
-* $FileName: usb_dev.h$
-* $Version : 
-* $Date    : 
-*
-* Comments:
-*
-*  This file contains the declarations specific to the USB Device API
-*
-*END*********************************************************************/
-#ifndef __USB_DEV_H__
-#define __USB_DEV_H__ 1
+/* Teensyduino Core Library
+ * http://www.pjrc.com/teensy/
+ * Copyright (c) 2017 PJRC.COM, LLC.
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining
+ * a copy of this software and associated documentation files (the
+ * "Software"), to deal in the Software without restriction, including
+ * without limitation the rights to use, copy, modify, merge, publish,
+ * distribute, sublicense, and/or sell copies of the Software, and to
+ * permit persons to whom the Software is furnished to do so, subject to
+ * the following conditions:
+ *
+ * 1. The above copyright notice and this permission notice shall be
+ * included in all copies or substantial portions of the Software.
+ *
+ * 2. If the Software is incorporated into a build system that allows
+ * selection among a list of target devices, then similar target
+ * devices manufactured by PJRC.COM must be included in the list of
+ * target devices and selectable in the same manner.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+ * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+ * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS
+ * BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN
+ * ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+ * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
 
-#include "usb_framework.h"
-#if (OS_ADAPTER_ACTIVE_OS == OS_ADAPTER_SDK)
-#if USE_RTOS
-#define USBCFG_DEV_USE_TASK 1
-#else
-#define USBCFG_DEV_USE_TASK 0
+#ifndef _usb_dev_h_
+#define _usb_dev_h_
+
+#define USB_DESC_LIST_DEFINE
+#include "usb_desc.h"
+
+#if F_CPU >= 20000000 && !defined(USB_DISABLED)
+
+// This header is NOT meant to be included when compiling
+// user sketches in Arduino.  The low-level functions
+// provided by usb_dev.c are meant to be called only by
+// code which provides higher-level interfaces to the user.
+
+#include "usb_mem.h"
+
+#ifdef __cplusplus
+extern "C" {
 #endif
 
-#endif
-#define MAX_DEVICE_SERVICE_NUMBER     8
+void usb_init(void);
+void usb_init_serialnumber(void);
+void usb_isr(void);
+usb_packet_t *usb_rx(uint32_t endpoint);
+uint32_t usb_tx_byte_count(uint32_t endpoint);
+uint32_t usb_tx_packet_count(uint32_t endpoint);
+void usb_tx(uint32_t endpoint, usb_packet_t *packet);
+void usb_tx_isochronous(uint32_t endpoint, void *data, uint32_t len);
 
-/* Callback function storage structure */
-typedef struct service_struct 
+extern volatile uint8_t usb_configuration;
+
+extern uint16_t usb_rx_byte_count_data[NUM_ENDPOINTS];
+static inline uint32_t usb_rx_byte_count(uint32_t endpoint) __attribute__((always_inline));
+static inline uint32_t usb_rx_byte_count(uint32_t endpoint)
 {
-   usb_event_service_t              service;
-   void*                            arg;
-   uint8_t                          type;
-} service_struct_t;
+        endpoint--;
+        if (endpoint >= NUM_ENDPOINTS) return 0;
+        return usb_rx_byte_count_data[endpoint];
+}
 
-typedef struct usb_dev_interface_functions_struct
-{
-   /* The Host/Device init function */
-   usb_status (_CODE_PTR_ dev_preint)(usb_device_handle upper_layer_handle, usb_device_handle *handle_ptr);
-
-   /* The Host/Device init function */
-   usb_status (_CODE_PTR_ dev_init)(uint8_t controller_id, usb_device_handle handle);
-   
-   /* The Host/Device init function */
-   usb_status (_CODE_PTR_ dev_postinit)( uint8_t controller_id, usb_device_handle handle);
-
-   /* The function to send data */
-   usb_status (_CODE_PTR_ dev_send)(usb_device_handle handle, xd_struct_t* xd);
-
-   /* The function to receive data */
-   usb_status (_CODE_PTR_ dev_recv)(usb_device_handle handle, xd_struct_t* xd);
-#if USBCFG_DEV_ADVANCED_CANCEL_ENABLE   
-   /* The function to cancel the transfer */
-   usb_status (_CODE_PTR_ dev_cancel_transfer)(usb_device_handle handle, uint8_t ep_num, uint8_t direction);
+#ifdef CDC_DATA_INTERFACE
+extern uint32_t usb_cdc_line_coding[2];
+extern volatile uint32_t usb_cdc_line_rtsdtr_millis;
+extern volatile uint32_t systick_millis_count;
+extern volatile uint8_t usb_cdc_line_rtsdtr;
+extern volatile uint8_t usb_cdc_transmit_flush_timer;
+extern void usb_serial_flush_callback(void);
 #endif
-   
-   usb_status (_CODE_PTR_ dev_init_endoint)(usb_device_handle handle, xd_struct_t* xd);
-   
-   usb_status (_CODE_PTR_ dev_deinit_endoint)(usb_device_handle handle, uint8_t ep_num, uint8_t direction);
-   
-   usb_status (_CODE_PTR_ dev_unstall_endpoint)(usb_device_handle handle, uint8_t ep_num, uint8_t direction);
-   
-   usb_status (_CODE_PTR_ dev_get_endpoint_status)(usb_device_handle handle, uint8_t component, uint16_t *endp_status);
-   
-   usb_status (_CODE_PTR_ dev_set_endpoint_status)(usb_device_handle handle, uint8_t component, uint16_t endp_status);
 
-   usb_status (_CODE_PTR_ dev_get_transfer_status)(usb_device_handle handle, uint8_t component, uint8_t status);
-   
-   usb_status (_CODE_PTR_ dev_set_address)(usb_device_handle handle, uint8_t addr);
-   
-   usb_status (_CODE_PTR_ dev_shutdown)(usb_device_handle handle);
-   
-   usb_status (_CODE_PTR_ dev_get_setup_data)(usb_device_handle handle, uint8_t component, uint8_t *data);
-#if USBCFG_DEV_ADVANCED_SUSPEND_RESUME  
-   usb_status (_CODE_PTR_ dev_assert_resume)(usb_device_handle handle);
+#ifdef SEREMU_INTERFACE
+extern volatile uint8_t usb_seremu_transmit_flush_timer;
+extern void usb_seremu_flush_callback(void);
 #endif
-   
-   usb_status (_CODE_PTR_ dev_stall_endpoint)(usb_device_handle handle, uint8_t ep_num, uint8_t direction);
-   
-   usb_status (_CODE_PTR_ dev_set_device_status)(usb_device_handle handle, uint8_t component, uint16_t setting);
-   
-   usb_status (_CODE_PTR_ dev_get_device_status)(usb_device_handle handle, uint8_t component, uint16_t *error);
 
-   usb_status (_CODE_PTR_ dev_get_xd)(usb_device_handle handle, xd_struct_t** xd);
-
-   usb_status (_CODE_PTR_ dev_reset)(usb_device_handle handle);
-} usb_dev_interface_functions_struct_t;
-
-typedef struct usb_dev_state_struct
-{
-    usb_device_handle               controller_handle;
-    const usb_dev_interface_functions_struct_t* usb_dev_interface;
-#if USBCFG_DEV_USE_TASK
-    os_msgq_handle                  usb_dev_service_que;
-    uint32_t                        task_id;
+#ifdef KEYBOARD_INTERFACE
+extern uint8_t keyboard_modifier_keys;
+extern uint8_t keyboard_keys[6];
+extern uint8_t keyboard_protocol;
+extern uint8_t keyboard_idle_config;
+extern uint8_t keyboard_idle_count;
+extern volatile uint8_t keyboard_leds;
 #endif
-    usb_class_fw_object_struct_t    usb_framework;
-    service_struct_t                services[MAX_DEVICE_SERVICE_NUMBER];
-    os_mutex_handle                 mutex;
-    uint8_t                         occupied;
-    uint8_t                         controller_id;       /* Device controller ID */
-    uint8_t                         dev_index;
-} usb_dev_state_struct_t;
+
+#ifdef MIDI_INTERFACE
+extern void usb_midi_flush_output(void);
+#endif
+
+#ifdef FLIGHTSIM_INTERFACE
+extern void usb_flightsim_flush_callback(void);
+#endif
+
+#ifdef AUDIO_INTERFACE
+extern uint16_t usb_audio_receive_buffer[];
+extern uint16_t usb_audio_transmit_buffer[];
+extern uint32_t usb_audio_sync_feedback;
+extern uint8_t usb_audio_receive_setting;
+extern uint8_t usb_audio_transmit_setting;
+extern void usb_audio_receive_callback(unsigned int len);
+extern unsigned int usb_audio_transmit_callback(void);
+extern int usb_audio_get_feature(void *stp, uint8_t *data, uint32_t *datalen);
+extern int usb_audio_set_feature(void *stp, uint8_t *buf);
+#endif
+
+#ifdef MULTITOUCH_INTERFACE
+extern void usb_touchscreen_update_callback(void);
+#endif
+
+
+#ifdef __cplusplus
+}
+#endif
+
+#else // F_CPU < 20000000
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+void usb_init(void);
+
+#ifdef __cplusplus
+}
+#endif
+
+
+#endif // F_CPU
 
 #endif
-/* EOF */
