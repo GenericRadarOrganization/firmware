@@ -1,432 +1,711 @@
-/**HEADER********************************************************************
-* 
-* Copyright (c) 2008, 2013 Freescale Semiconductor;
-* All Rights Reserved
-*
-* Copyright (c) 1989-2008 ARC International;
-* All Rights Reserved
-*
-*************************************************************************** 
-*
-* THIS SOFTWARE IS PROVIDED BY FREESCALE "AS IS" AND ANY EXPRESSED OR 
-* IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES 
-* OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.  
-* IN NO EVENT SHALL FREESCALE OR ITS CONTRIBUTORS BE LIABLE FOR ANY DIRECT, 
-* INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES 
-* (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR 
-* SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) 
-* HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, 
-* STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING 
-* IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF 
-* THE POSSIBILITY OF SUCH DAMAGE.
-*
-**************************************************************************
-*
-* $FileName: usb_desc.h$
-* $Version : 
-* $Date    : 
-*
-* Comments:
-*
-*   This file contains struct definitions for USB descriptors.
-*
-*END************************************************************************/
-#ifndef __usb_desc_h__
-#define __usb_desc_h__
+/* Teensyduino Core Library
+ * http://www.pjrc.com/teensy/
+ * Copyright (c) 2017 PJRC.COM, LLC.
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining
+ * a copy of this software and associated documentation files (the
+ * "Software"), to deal in the Software without restriction, including
+ * without limitation the rights to use, copy, modify, merge, publish,
+ * distribute, sublicense, and/or sell copies of the Software, and to
+ * permit persons to whom the Software is furnished to do so, subject to
+ * the following conditions:
+ *
+ * 1. The above copyright notice and this permission notice shall be
+ * included in all copies or substantial portions of the Software.
+ *
+ * 2. If the Software is incorporated into a build system that allows
+ * selection among a list of target devices, then similar target
+ * devices manufactured by PJRC.COM must be included in the list of
+ * target devices and selectable in the same manner.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+ * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+ * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS
+ * BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN
+ * ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+ * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
 
-#include "MKL26Z4.h"
-#include "compiler.h"
-/*------------------------------**
- ** Class / SubClass / Protocol  **
- **------------------------------*/
+#ifndef _usb_desc_h_
+#define _usb_desc_h_
 
-#define  USB_CLASS_AUDIO            1
-#define  USB_SUBCLASS_UNDEFINED     0
-#define  USB_SUBCLASS_AUD_CONTROL   1
-#define  USB_SUBCLASS_AUD_STREAMING 2
-#define  USB_SUBCLASS_AUD_MIDI_STRM 3
-#define  USB_PROTOCOL_UNDEFINED     0
+// This header is NOT meant to be included when compiling
+// user sketches in Arduino.  The low-level functions
+// provided by usb_dev.c are meant to be called only by
+// code which provides higher-level interfaces to the user.
 
-#define  USB_CLASS_COMMUNICATION    2
-#define  USB_SUBCLASS_COM_DIRECT    1
-#define  USB_SUBCLASS_COM_ABSTRACT  2
-#define  USB_SUBCLASS_COM_TELEPHONE 3
-#define  USB_SUBCLASS_COM_MULTICHAN 4
-#define  USB_SUBCLASS_COM_CAPI      5
-#define  USB_SUBCLASS_COM_ETHERNET  6
-#define  USB_SUBCLASS_COM_ATM_NET   7
-#define  USB_PROTOCOL_COM_NOSPEC    0
-#define  USB_PROTOCOL_COM_V25       1
-#define  USB_PROTOCOL_COM_HAYES     1
-#define  USB_PROTOCOL_COM_AT        1
-#define  USB_PROTOCOL_COM_VENDOR    0xFF
+#include <stdint.h>
+#include <stddef.h>
 
-#define  USB_CLASS_PRINTER          7
-#define  USB_SUBCLASS_PRINTER       1
-#define  USB_PROTOCOL_PRT_UNIDIR   1
-#define  USB_PROTOCOL_PRT_BIDIR     2
-#define  USB_PROTOCOL_PRT_1284      3
+#define ENDPOINT_UNUSED			0x00
+#define ENDPOINT_TRANSIMIT_ONLY		0x15
+#define ENDPOINT_RECEIVE_ONLY		0x19
+#define ENDPOINT_TRANSMIT_AND_RECEIVE	0x1D
+#define ENDPOINT_RECEIVE_ISOCHRONOUS	0x18
+#define ENDPOINT_TRANSMIT_ISOCHRONOUS	0x14
 
-#define  USB_CLASS_MASS_STORAGE     8
-#define  USB_SUBCLASS_MASS_RBC      1
-#define  USB_SUBCLASS_MASS_ATAPI    2
-#define  USB_SUBCLASS_MASS_QIC157   3
-#define  USB_SUBCLASS_MASS_UFI      4
-#define  USB_SUBCLASS_MASS_SFF8070I 5
-#define  USB_SUBCLASS_MASS_SCSI     6
-#define  USB_PROTOCOL_MASS_IRRPT    0
-#define  USB_PROTOCOL_MASS_NOIRRPT  1
-#define  USB_PROTOCOL_MASS_BULK     0x50
+/*
+Each group of #define lines below corresponds to one of the
+settings in the Tools > USB Type menu.  This file defines what
+type of USB device is actually created for each of those menu
+options.
 
-#define  USB_CLASS_HID              3
-#define  USB_SUBCLASS_HID_NONE      0
-#define  USB_SUBCLASS_HID_BOOT      1
-#define  USB_PROTOCOL_HID_NONE      0
-#define  USB_PROTOCOL_HID_KEYBOARD  1
-#define  USB_PROTOCOL_HID_MOUSE     2
-#define  USB_PROTOCOL_HID_BOOT_E    0
-#define  USB_PROTOCOL_HID_REPORT_E  1
+Each "interface" is a set of functionality your PC or Mac will
+use and treat as if it is a unique device.  Within each interface,
+the "endpoints" are the actual communication channels.  Most
+interfaces use 1, 2 or 3 endpoints.  By editing only this file,
+you can customize the USB Types to be any collection of interfaces.
 
-#define  USB_CLASS_HUB              9
-#define  USB_SUBCLASS_HUB_NONE      0
-#define  USB_PROTOCOL_HUB_LS        0
-#define  USB_PROTOCOL_HUB_FS        0
-#define  USB_PROTOCOL_HUB_HS_SINGLE 1
-#define  USB_PROTOCOL_HUB_HS_MULTI  2
-#define  USB_PROTOCOL_HUB_ALL       0xFF
+To modify a USB Type, delete the XYZ_INTERFACE lines for any
+interfaces you wish to remove, and copy them from another USB Type
+for any you want to add.
 
-#define  USB_CLASS_DATA             0x0A
-/* No data subclasses, set to 0 */
-#define  USB_PROTOCOL_DATA_I430     0x30
-#define  USB_PROTOCOL_DATA_HDLC     0x31
-#define  USB_PROTOCOL_DATA_TRANS    0x32
-#define  USB_PROTOCOL_DATA_Q921M    0x50
-#define  USB_PROTOCOL_DATA_Q921     0x51
-#define  USB_PROTOCOL_DATA_Q921TM   0x52
-#define  USB_PROTOCOL_DATA_V42BIS   0x90
-#define  USB_PROTOCOL_DATA_EUROISDN 0x91
-#define  USB_PROTOCOL_DATA_V120     0x92
-#define  USB_PROTOCOL_DATA_CAPI20   0x93
-#define  USB_PROTOCOL_DATA_HOST     0xFE
-#define  USB_PROTOCOL_DATA_CDC      0xFE
-#define  USB_PROTOCOL_DATA_VENDOR   0xFF
+Give each interface a unique number, and edit NUM_INTERFACE to
+reflect the total number of interfaces.
 
-#define  USB_CLASS_VIDEO                          0x0E
-#define  USB_SUBCLASS_VIDEO_UNDEFINED             0x00
-#define  USB_SUBCLASS_VIDEO_CONTROL               0x01
-#define  USB_SUBCLASS_VIDEO_STREAMING             0x02
-#define  USB_SUBCLASS_VIDEO_INFERFACE_COLLECTION  0x03
-#define  USB_PROTOCOL_VIDEO_UNDEFINED             0x00
+Next, assign unique endpoint numbers to all the endpoints across
+all the interfaces your device has.  You can reuse an endpoint
+number for transmit and receive, but the same endpoint number must
+not be used twice to transmit, or twice to receive.
 
-#define  USB_CLASS_PHDC                           0x0F
+Most endpoints also require their maximum size, and some also
+need an interval specification (the number of milliseconds the
+PC will check for data from that endpoint).  For existing
+interfaces, usually these other settings should not be changed.
 
-/* USB Descriptor Endpoint types */
-#define USB_CONTROL_PIPE                    (0x00)
-#define USB_ISOCHRONOUS_PIPE                (0x01)
-#define USB_BULK_PIPE                       (0x02)
-#define USB_INTERRUPT_PIPE                  (0x03)
+Edit NUM_ENDPOINTS to be at least the largest endpoint number used.
 
-/* USB Descriptor Direction constants */
-#define USB_RECV                            (0)
-#define USB_SEND                            (1)
+Edit NUM_USB_BUFFERS to control how much memory the USB stack will
+allocate.  At least 2 should be used for each endpoint.  More
+memory will allow higher throughput for user programs that have
+high latency (eg, spending time doing things other than interacting
+with the USB).
 
-/* USB Descriptor Lengths */
-#define USB_DESC_LEN_DEV               (18)
-#define USB_DESC_LEN_CFG               (9)
-#define USB_DESC_LEN_STR               (2)  /* minimum length */
-#define USB_DESC_LEN_IF                (9)
-#define USB_DESC_LEN_EP                (7)
-#define USB_DESC_LEN_DEV_QUALIFIER     (10)
-#define USB_DESC_LEN_OTHER_SPEED_CFG   (USB_DESC_LEN_CFG)
+Edit the ENDPOINT*_CONFIG lines so each endpoint is configured
+the proper way (transmit, receive, or both).
 
-/* USB Descriptor Types */
-#define USB_DESC_TYPE_DEV              (1)
-#define USB_DESC_TYPE_CFG              (2)
-#define USB_DESC_TYPE_STR              (3)
-#define USB_DESC_TYPE_IF               (4)
-#define USB_DESC_TYPE_EP               (5)
-#define USB_DESC_TYPE_DEV_QUALIFIER    (6)
-#define USB_DESC_TYPE_OTHER_SPEED_CFG  (7)
-#define USB_DESC_TYPE_IF_POWER         (8)
-#define USB_DESC_TYPE_OTG              (9)
-#define USB_DESC_TYPE_HID              (0x21)
-#define USB_DESC_TYPE_REPORT           (0x22)
+If you are using existing interfaces (making your own device with
+a different set of interfaces) the code in all other files should
+automatically adapt to the new endpoints you specify here.
 
-/* USB Functional Descriptor Types */
-#define USB_DESC_TYPE_CS_INTERFACE     (0x24)
-#define USB_DESC_TYPE_CS_ENDPOINT      (0x25)
+If you need to create a new type of interface, you'll need to write
+the code which sends and receives packets, and presents an API to
+the user.  Usually, a pair of files are added for the actual code,
+and code is also added in usb_dev.c for any control transfers,
+interrupt-level code, or other very low-level stuff not possible
+from the packet send/receive functons.  Code also is added in
+usb_inst.c to create an instance of your C++ object.
+
+You may edit the Vendor and Product ID numbers, and strings.  If
+the numbers are changed, Teensyduino may not be able to automatically
+find and reboot your board when you click the Upload button in
+the Arduino IDE.  You will need to press the Program button on
+Teensy to initiate programming.
+
+Some operating systems, especially Windows, may cache USB device
+info.  Changes to the device name may not update on the same
+computer unless the vendor or product ID numbers change, or the
+"bcdDevice" revision code is increased.
+
+If these instructions are missing steps or could be improved, please
+let me know?  http://forum.pjrc.com/forums/4-Suggestions-amp-Bug-Reports
+*/
 
 
-/* USB Standard Device Requests - bmRequestType */
-#define USB_DEV_REQ_STD_REQUEST_TYPE_DIR_MASK   (0x1)
-#define USB_DEV_REQ_STD_REQUEST_TYPE_DIR_SHIFT  (7)
-#define USB_DEV_REQ_STD_REQUEST_TYPE_DIR_POS    (USB_DEV_REQ_STD_REQUEST_TYPE_DIR_MASK << USB_DEV_REQ_STD_REQUEST_TYPE_DIR_SHIFT)
+#if defined(USB_SERIAL)
+  #define VENDOR_ID		0x16C0
+  #define PRODUCT_ID		0x0483
+  #define DEVICE_CLASS		2	// 2 = Communication Class
+  #define MANUFACTURER_NAME	{'T','e','e','n','s','y','d','u','i','n','o'}
+  #define MANUFACTURER_NAME_LEN	11
+  #define PRODUCT_NAME		{'U','S','B',' ','S','e','r','i','a','l'}
+  #define PRODUCT_NAME_LEN	10
+  #define EP0_SIZE		64
+  #define NUM_ENDPOINTS		4
+  #define NUM_USB_BUFFERS	12
+  #define NUM_INTERFACE		2
+  #define CDC_STATUS_INTERFACE	0
+  #define CDC_DATA_INTERFACE	1
+  #define CDC_ACM_ENDPOINT	2
+  #define CDC_RX_ENDPOINT       3
+  #define CDC_TX_ENDPOINT       4
+  #define CDC_ACM_SIZE          16
+  #define CDC_RX_SIZE           64
+  #define CDC_TX_SIZE           64
+  #define ENDPOINT2_CONFIG	ENDPOINT_TRANSIMIT_ONLY
+  #define ENDPOINT3_CONFIG	ENDPOINT_RECEIVE_ONLY
+  #define ENDPOINT4_CONFIG	ENDPOINT_TRANSIMIT_ONLY
 
-#define USB_DEV_REQ_STD_REQUEST_TYPE_TYPE_MASK  (0x3)
-#define USB_DEV_REQ_STD_REQUEST_TYPE_TYPE_SHIFT (5)
-#define USB_DEV_REQ_STD_REQUEST_TYPE_TYPE_POS   (USB_DEV_REQ_STD_REQUEST_TYPE_TYPE_MASK << USB_DEV_REQ_STD_REQUEST_TYPE_TYPE_SHIFT)
+#elif defined(USB_KEYBOARDONLY)
+  #define VENDOR_ID		0x16C0
+  #define PRODUCT_ID		0x04D0
+  #define MANUFACTURER_NAME	{'T','e','e','n','s','y','d','u','i','n','o'}
+  #define MANUFACTURER_NAME_LEN	11
+  #define PRODUCT_NAME		{'K','e','y','b','o','a','r','d'}
+  #define PRODUCT_NAME_LEN	8
+  #define EP0_SIZE		64
+  #define NUM_ENDPOINTS         4
+  #define NUM_USB_BUFFERS	14
+  #define NUM_INTERFACE		3
+  #define SEREMU_INTERFACE      1	// Serial emulation
+  #define SEREMU_TX_ENDPOINT    1
+  #define SEREMU_TX_SIZE        64
+  #define SEREMU_TX_INTERVAL    1
+  #define SEREMU_RX_ENDPOINT    2
+  #define SEREMU_RX_SIZE        32
+  #define SEREMU_RX_INTERVAL    2
+  #define KEYBOARD_INTERFACE    0	// Keyboard
+  #define KEYBOARD_ENDPOINT     3
+  #define KEYBOARD_SIZE         8
+  #define KEYBOARD_INTERVAL     1
+  #define KEYMEDIA_INTERFACE    2	// Keyboard Media Keys
+  #define KEYMEDIA_ENDPOINT     4
+  #define KEYMEDIA_SIZE         8
+  #define KEYMEDIA_INTERVAL     4
+  #define ENDPOINT1_CONFIG	ENDPOINT_TRANSIMIT_ONLY
+  #define ENDPOINT2_CONFIG	ENDPOINT_RECEIVE_ONLY
+  #define ENDPOINT3_CONFIG	ENDPOINT_TRANSIMIT_ONLY
+  #define ENDPOINT4_CONFIG	ENDPOINT_TRANSIMIT_ONLY
+  #define ENDPOINT5_CONFIG	ENDPOINT_TRANSIMIT_ONLY
+  #define ENDPOINT6_CONFIG	ENDPOINT_TRANSIMIT_ONLY
 
-#define USB_DEV_REQ_STD_REQUEST_TYPE_RECIPIENT_MASK  (0x1F)
-#define USB_DEV_REQ_STD_REQUEST_TYPE_RECIPIENT_SHIFT (0)
-#define USB_DEV_REQ_STD_REQUEST_TYPE_RECIPIENT_POS   (USB_DEV_REQ_STD_REQUEST_TYPE_RECIPIENT_MASK << USB_DEV_REQ_STD_REQUEST_TYPE_RECIPIENT_SHIFT)
+#elif defined(USB_HID)
+  #define VENDOR_ID		0x16C0
+  #define PRODUCT_ID		0x0482
+  #define MANUFACTURER_NAME	{'T','e','e','n','s','y','d','u','i','n','o'}
+  #define MANUFACTURER_NAME_LEN	11
+  #define PRODUCT_NAME		{'K','e','y','b','o','a','r','d','/','M','o','u','s','e','/','J','o','y','s','t','i','c','k'}
+  #define PRODUCT_NAME_LEN	23
+  #define EP0_SIZE		64
+  #define NUM_ENDPOINTS         6
+  #define NUM_USB_BUFFERS	24
+  #define NUM_INTERFACE		5
+  #define SEREMU_INTERFACE      2	// Serial emulation
+  #define SEREMU_TX_ENDPOINT    1
+  #define SEREMU_TX_SIZE        64
+  #define SEREMU_TX_INTERVAL    1
+  #define SEREMU_RX_ENDPOINT    2
+  #define SEREMU_RX_SIZE        32
+  #define SEREMU_RX_INTERVAL    2
+  #define KEYBOARD_INTERFACE    0	// Keyboard
+  #define KEYBOARD_ENDPOINT     3
+  #define KEYBOARD_SIZE         8
+  #define KEYBOARD_INTERVAL     1
+  #define KEYMEDIA_INTERFACE    4	// Keyboard Media Keys
+  #define KEYMEDIA_ENDPOINT     6
+  #define KEYMEDIA_SIZE         8
+  #define KEYMEDIA_INTERVAL     4
+  #define MOUSE_INTERFACE       1	// Mouse
+  #define MOUSE_ENDPOINT        5
+  #define MOUSE_SIZE            8
+  #define MOUSE_INTERVAL        1
+  #define JOYSTICK_INTERFACE    3	// Joystick
+  #define JOYSTICK_ENDPOINT     4
+  #define JOYSTICK_SIZE         12	//  12 = normal, 64 = extreme joystick
+  #define JOYSTICK_INTERVAL     2
+  #define ENDPOINT1_CONFIG	ENDPOINT_TRANSIMIT_ONLY
+  #define ENDPOINT2_CONFIG	ENDPOINT_RECEIVE_ONLY
+  #define ENDPOINT3_CONFIG	ENDPOINT_TRANSIMIT_ONLY
+  #define ENDPOINT4_CONFIG	ENDPOINT_TRANSIMIT_ONLY
+  #define ENDPOINT5_CONFIG	ENDPOINT_TRANSIMIT_ONLY
+  #define ENDPOINT6_CONFIG	ENDPOINT_TRANSIMIT_ONLY
 
-#define USB_DEV_REQ_STD_REQUEST_TYPE_DIR_OUT ((0x0 & USB_DEV_REQ_STD_REQUEST_TYPE_DIR_MASK) << USB_DEV_REQ_STD_REQUEST_TYPE_DIR_SHIFT)
-#define USB_DEV_REQ_STD_REQUEST_TYPE_DIR_IN  ((0x1 & USB_DEV_REQ_STD_REQUEST_TYPE_DIR_MASK) << USB_DEV_REQ_STD_REQUEST_TYPE_DIR_SHIFT)
+#elif defined(USB_SERIAL_HID)
+  #define VENDOR_ID		0x16C0
+  #define PRODUCT_ID		0x0487
+  #define DEVICE_CLASS		0xEF
+  #define DEVICE_SUBCLASS	0x02
+  #define DEVICE_PROTOCOL	0x01
+  #define MANUFACTURER_NAME	{'T','e','e','n','s','y','d','u','i','n','o'}
+  #define MANUFACTURER_NAME_LEN	11
+  #define PRODUCT_NAME		{'S','e','r','i','a','l','/','K','e','y','b','o','a','r','d','/','M','o','u','s','e','/','J','o','y','s','t','i','c','k'}
+  #define PRODUCT_NAME_LEN	30
+  #define EP0_SIZE		64
+  #define NUM_ENDPOINTS		7
+  #define NUM_USB_BUFFERS	30
+  #define NUM_INTERFACE		6
+  #define CDC_IAD_DESCRIPTOR	1
+  #define CDC_STATUS_INTERFACE	0
+  #define CDC_DATA_INTERFACE	1	// Serial
+  #define CDC_ACM_ENDPOINT	2
+  #define CDC_RX_ENDPOINT       3
+  #define CDC_TX_ENDPOINT       4
+  #define CDC_ACM_SIZE          16
+  #define CDC_RX_SIZE           64
+  #define CDC_TX_SIZE           64
+  #define KEYBOARD_INTERFACE    2	// Keyboard
+  #define KEYBOARD_ENDPOINT     1
+  #define KEYBOARD_SIZE         8
+  #define KEYBOARD_INTERVAL     1
+  #define KEYMEDIA_INTERFACE    5	// Keyboard Media Keys
+  #define KEYMEDIA_ENDPOINT     7
+  #define KEYMEDIA_SIZE         8
+  #define KEYMEDIA_INTERVAL     4
+  #define MOUSE_INTERFACE       3	// Mouse
+  #define MOUSE_ENDPOINT        5
+  #define MOUSE_SIZE            8
+  #define MOUSE_INTERVAL        2
+  #define JOYSTICK_INTERFACE    4	// Joystick
+  #define JOYSTICK_ENDPOINT     6
+  #define JOYSTICK_SIZE         12	//  12 = normal, 64 = extreme joystick
+  #define JOYSTICK_INTERVAL     1
+  #define ENDPOINT1_CONFIG	ENDPOINT_TRANSIMIT_ONLY
+  #define ENDPOINT2_CONFIG	ENDPOINT_TRANSIMIT_ONLY
+  #define ENDPOINT3_CONFIG	ENDPOINT_RECEIVE_ONLY
+  #define ENDPOINT4_CONFIG	ENDPOINT_TRANSIMIT_ONLY
+  #define ENDPOINT5_CONFIG	ENDPOINT_TRANSIMIT_ONLY
+  #define ENDPOINT6_CONFIG	ENDPOINT_TRANSIMIT_ONLY
+  #define ENDPOINT7_CONFIG	ENDPOINT_TRANSIMIT_ONLY
 
-#define USB_DEV_REQ_STD_REQUEST_TYPE_TYPE_STANDARD ((0x0 & USB_DEV_REQ_STD_REQUEST_TYPE_TYPE_MASK) << USB_DEV_REQ_STD_REQUEST_TYPE_TYPE_SHIFT)
-#define USB_DEV_REQ_STD_REQUEST_TYPE_TYPE_CLASS    ((0x1 & USB_DEV_REQ_STD_REQUEST_TYPE_TYPE_MASK) << USB_DEV_REQ_STD_REQUEST_TYPE_TYPE_SHIFT)
-#define USB_DEV_REQ_STD_REQUEST_TYPE_TYPE_VENDOR   ((0x2 & USB_DEV_REQ_STD_REQUEST_TYPE_TYPE_MASK) << USB_DEV_REQ_STD_REQUEST_TYPE_TYPE_SHIFT)
+#elif defined(USB_TOUCHSCREEN)
+  #define VENDOR_ID		0x16C0
+  #define PRODUCT_ID		0x04D3
+  #define MANUFACTURER_NAME	{'T','e','e','n','s','y','d','u','i','n','o'}
+  #define MANUFACTURER_NAME_LEN	11
+  #define PRODUCT_NAME		{'K','e','y','b','o','a','r','d','/','T','o','u','c','h','s','c','r','e','e','n'}
+  #define PRODUCT_NAME_LEN	20
+  #define EP0_SIZE		64
+  #define NUM_ENDPOINTS         5
+  #define NUM_USB_BUFFERS	15
+  #define NUM_INTERFACE		4
+  #define SEREMU_INTERFACE      1	// Serial emulation
+  #define SEREMU_TX_ENDPOINT    1
+  #define SEREMU_TX_SIZE        64
+  #define SEREMU_TX_INTERVAL    1
+  #define SEREMU_RX_ENDPOINT    2
+  #define SEREMU_RX_SIZE        32
+  #define SEREMU_RX_INTERVAL    2
+  #define KEYBOARD_INTERFACE    0	// Keyboard
+  #define KEYBOARD_ENDPOINT     3
+  #define KEYBOARD_SIZE         8
+  #define KEYBOARD_INTERVAL     1
+  #define KEYMEDIA_INTERFACE    2	// Keyboard Media Keys
+  #define KEYMEDIA_ENDPOINT     4
+  #define KEYMEDIA_SIZE         8
+  #define KEYMEDIA_INTERVAL     4
+  #define MULTITOUCH_INTERFACE  3	// Touchscreen
+  #define MULTITOUCH_ENDPOINT   5
+  #define MULTITOUCH_SIZE       9
+  #define MULTITOUCH_FINGERS    10
+  #define ENDPOINT1_CONFIG	ENDPOINT_TRANSIMIT_ONLY
+  #define ENDPOINT2_CONFIG	ENDPOINT_RECEIVE_ONLY
+  #define ENDPOINT3_CONFIG	ENDPOINT_TRANSIMIT_ONLY
+  #define ENDPOINT4_CONFIG	ENDPOINT_TRANSIMIT_ONLY
+  #define ENDPOINT5_CONFIG	ENDPOINT_TRANSIMIT_ONLY
 
-#define USB_DEV_REQ_STD_REQUEST_TYPE_RECIPIENT_DEVICE    ((0x00 & USB_DEV_REQ_STD_REQUEST_TYPE_RECIPIENT_MASK) << USB_DEV_REQ_STD_REQUEST_TYPE_RECIPIENT_SHIFT)
-#define USB_DEV_REQ_STD_REQUEST_TYPE_RECIPIENT_INTERFACE ((0x01 & USB_DEV_REQ_STD_REQUEST_TYPE_RECIPIENT_MASK) << USB_DEV_REQ_STD_REQUEST_TYPE_RECIPIENT_SHIFT)
-#define USB_DEV_REQ_STD_REQUEST_TYPE_RECIPIENT_ENDPOINT  ((0x02 & USB_DEV_REQ_STD_REQUEST_TYPE_RECIPIENT_MASK) << USB_DEV_REQ_STD_REQUEST_TYPE_RECIPIENT_SHIFT)
-#define USB_DEV_REQ_STD_REQUEST_TYPE_RECIPIENT_OTHER     ((0x03 & USB_DEV_REQ_STD_REQUEST_TYPE_RECIPIENT_MASK) << USB_DEV_REQ_STD_REQUEST_TYPE_RECIPIENT_SHIFT)
+#elif defined(USB_HID_TOUCHSCREEN)
+  #define VENDOR_ID		0x16C0
+  #define PRODUCT_ID		0x04D4
+  #define MANUFACTURER_NAME	{'T','e','e','n','s','y','d','u','i','n','o'}
+  #define MANUFACTURER_NAME_LEN	11
+  #define PRODUCT_NAME		{'K','e','y','b','o','a','r','d','/','M','o','u','s','e','/','T','o','u','c','h','s','c','r','e','e','n'}
+  #define PRODUCT_NAME_LEN	26
+  #define EP0_SIZE		64
+  #define NUM_ENDPOINTS         6
+  #define NUM_USB_BUFFERS	20
+  #define NUM_INTERFACE		5
+  #define SEREMU_INTERFACE      2	// Serial emulation
+  #define SEREMU_TX_ENDPOINT    1
+  #define SEREMU_TX_SIZE        64
+  #define SEREMU_TX_INTERVAL    1
+  #define SEREMU_RX_ENDPOINT    2
+  #define SEREMU_RX_SIZE        32
+  #define SEREMU_RX_INTERVAL    2
+  #define KEYBOARD_INTERFACE    0	// Keyboard
+  #define KEYBOARD_ENDPOINT     3
+  #define KEYBOARD_SIZE         8
+  #define KEYBOARD_INTERVAL     1
+  #define KEYMEDIA_INTERFACE    3	// Keyboard Media Keys
+  #define KEYMEDIA_ENDPOINT     4
+  #define KEYMEDIA_SIZE         8
+  #define KEYMEDIA_INTERVAL     4
+  #define MOUSE_INTERFACE       1	// Mouse
+  #define MOUSE_ENDPOINT        6
+  #define MOUSE_SIZE            8
+  #define MOUSE_INTERVAL        2
+  #define MULTITOUCH_INTERFACE  4	// Touchscreen
+  #define MULTITOUCH_ENDPOINT   5
+  #define MULTITOUCH_SIZE       9
+  #define MULTITOUCH_FINGERS    10
+  #define ENDPOINT1_CONFIG	ENDPOINT_TRANSIMIT_ONLY
+  #define ENDPOINT2_CONFIG	ENDPOINT_RECEIVE_ONLY
+  #define ENDPOINT3_CONFIG	ENDPOINT_TRANSIMIT_ONLY
+  #define ENDPOINT4_CONFIG	ENDPOINT_TRANSIMIT_ONLY
+  #define ENDPOINT5_CONFIG	ENDPOINT_TRANSIMIT_ONLY
+  #define ENDPOINT6_CONFIG	ENDPOINT_TRANSIMIT_ONLY
 
-/* USB Standard Request Codes - bRequest */
-#define USB_DEV_REQ_STD_REQUEST_GET_STATUS         (0)
-#define USB_DEV_REQ_STD_REQUEST_CLEAR_FEATURE      (1)
-#define USB_DEV_REQ_STD_REQUEST_SET_FEATURE        (3)
-#define USB_DEV_REQ_STD_REQUEST_SET_ADDRESS        (5)
-#define USB_DEV_REQ_STD_REQUEST_GET_DESCRIPTOR     (6)
-#define USB_DEV_REQ_STD_REQUEST_SET_DESCRIPTOR     (7)
-#define USB_DEV_REQ_STD_REQUEST_GET_CONFIGURATION  (8)
-#define USB_DEV_REQ_STD_REQUEST_SET_CONFIGURATION  (9)
-#define USB_DEV_REQ_STD_REQUEST_GET_INTERFACE      (10)
-#define USB_DEV_REQ_STD_REQUEST_SET_INTERFACE      (11)
-#define USB_DEV_REQ_STD_REQUEST_SYNCH_FRAME        (12)
+#elif defined(USB_MIDI)
+  #define VENDOR_ID		0x16C0
+  #define PRODUCT_ID		0x0485
+  #define MANUFACTURER_NAME	{'T','e','e','n','s','y','d','u','i','n','o'}
+  #define MANUFACTURER_NAME_LEN	11
+  #define PRODUCT_NAME		{'T','e','e','n','s','y',' ','M','I','D','I'}
+  #define PRODUCT_NAME_LEN	11
+  #define EP0_SIZE		64
+  #define NUM_ENDPOINTS         4
+  #define NUM_USB_BUFFERS	16
+  #define NUM_INTERFACE		2
+  #define SEREMU_INTERFACE      1	// Serial emulation
+  #define SEREMU_TX_ENDPOINT    1
+  #define SEREMU_TX_SIZE        64
+  #define SEREMU_TX_INTERVAL    1
+  #define SEREMU_RX_ENDPOINT    2
+  #define SEREMU_RX_SIZE        32
+  #define SEREMU_RX_INTERVAL    2
+  #define MIDI_INTERFACE        0	// MIDI
+  #define MIDI_TX_ENDPOINT      3
+  #define MIDI_TX_SIZE          64
+  #define MIDI_RX_ENDPOINT      4
+  #define MIDI_RX_SIZE          64
+  #define ENDPOINT1_CONFIG	ENDPOINT_TRANSIMIT_ONLY
+  #define ENDPOINT2_CONFIG	ENDPOINT_RECEIVE_ONLY
+  #define ENDPOINT3_CONFIG	ENDPOINT_TRANSIMIT_ONLY
+  #define ENDPOINT4_CONFIG	ENDPOINT_RECEIVE_ONLY
 
-#define GET_STATUS_DEVICE_MASK           (0x0003)  
-#define REMOTE_WAKEUP_STATUS_MASK        (0x0002) 
-/* identification values and masks to identify request types  */
-//#define USB_REQUEST_CLASS_MASK   (0x60) 
-//#define USB_REQUEST_CLASS_STRD   (0x00) 
-//#define USB_REQUEST_CLASS_CLASS  (0x20) 
-//#define USB_REQUEST_CLASS_VENDOR (0x40) 
-#define USB_GET_STATUS_ATTRIBUTES_SELF_POWERED_SHIFT (0)
-#define USB_GET_STATUS_ATTRIBUTES_REMOTE_WAKEUP_SHIFT (1)
-/* Configuration bmAttributes fields */
-#define USB_DESC_CFG_ATTRIBUTES_D7_MASK  (0x1)
-#define USB_DESC_CFG_ATTRIBUTES_D7_SHIFT (7)
-#define USB_DESC_CFG_ATTRIBUTES_D7_POS   (USB_DESC_CFG_ATTRIBUTES_D7_MASK << USB_DESC_CFG_ATTRIBUTES_D7_SHIFT)
-                                                         
-#define USB_DESC_CFG_ATTRIBUTES_SELF_POWERED_MASK  (0x1)
-#define USB_DESC_CFG_ATTRIBUTES_SELF_POWERED_SHIFT (6)
-#define USB_DESC_CFG_ATTRIBUTES_SELF_POWERED_POS   (USB_DESC_CFG_ATTRIBUTES_SELF_POWERED_MASK << USB_DESC_CFG_ATTRIBUTES_SELF_POWERED_SHIFT)
+#elif defined(USB_MIDI_SERIAL)
+  #define VENDOR_ID		0x16C0
+  #define PRODUCT_ID		0x0489
+  #define MANUFACTURER_NAME	{'T','e','e','n','s','y','d','u','i','n','o'}
+  #define MANUFACTURER_NAME_LEN	11
+  #define PRODUCT_NAME		{'T','e','e','n','s','y',' ','M','I','D','I'}
+  #define PRODUCT_NAME_LEN	11
+  #define EP0_SIZE		64
+  #define NUM_ENDPOINTS         5
+  #define NUM_USB_BUFFERS	30
+  #define NUM_INTERFACE		3
+  #define CDC_IAD_DESCRIPTOR	1
+  #define CDC_STATUS_INTERFACE	0
+  #define CDC_DATA_INTERFACE	1	// Serial
+  #define CDC_ACM_ENDPOINT	1
+  #define CDC_RX_ENDPOINT       2
+  #define CDC_TX_ENDPOINT       3
+  #define CDC_ACM_SIZE          16
+  #define CDC_RX_SIZE           64
+  #define CDC_TX_SIZE           64
+  #define MIDI_INTERFACE        2	// MIDI
+  #define MIDI_TX_ENDPOINT      4
+  #define MIDI_TX_SIZE          64
+  #define MIDI_RX_ENDPOINT      5
+  #define MIDI_RX_SIZE          64
+  #define ENDPOINT1_CONFIG	ENDPOINT_TRANSIMIT_ONLY
+  #define ENDPOINT2_CONFIG	ENDPOINT_RECEIVE_ONLY
+  #define ENDPOINT3_CONFIG	ENDPOINT_TRANSIMIT_ONLY
+  #define ENDPOINT4_CONFIG	ENDPOINT_TRANSIMIT_ONLY
+  #define ENDPOINT5_CONFIG	ENDPOINT_RECEIVE_ONLY
 
-#define USB_DESC_CFG_ATTRIBUTES_REMOTE_WAKEUP_MASK  (0x1)
-#define USB_DESC_CFG_ATTRIBUTES_REMOTE_WAKEUP_SHIFT (5)
-#define USB_DESC_CFG_ATTRIBUTES_REMOTE_WAKEUP_POS   (USB_DESC_CFG_ATTRIBUTES_REMOTE_WAKEUP_MASK << USB_DESC_CFG_ATTRIBUTES_REMOTE_WAKEUP_SHIFT)
+#elif defined(USB_RAWHID)
+  #define VENDOR_ID		0x16C0
+  #define PRODUCT_ID		0x0486
+  #define RAWHID_USAGE_PAGE	0xFFAB  // recommended: 0xFF00 to 0xFFFF
+  #define RAWHID_USAGE		0x0200  // recommended: 0x0100 to 0xFFFF
+  #define MANUFACTURER_NAME	{'T','e','e','n','s','y','d','u','i','n','o'}
+  #define MANUFACTURER_NAME_LEN	11
+  #define PRODUCT_NAME		{'T','e','e','n','s','y','d','u','i','n','o',' ','R','a','w','H','I','D'}
+  #define PRODUCT_NAME_LEN	18
+  #define EP0_SIZE		64
+  #define NUM_ENDPOINTS         4
+  #define NUM_USB_BUFFERS	12
+  #define NUM_INTERFACE		2
+  #define RAWHID_INTERFACE      0	// RawHID
+  #define RAWHID_TX_ENDPOINT    3
+  #define RAWHID_TX_SIZE        64
+  #define RAWHID_TX_INTERVAL    1
+  #define RAWHID_RX_ENDPOINT    4
+  #define RAWHID_RX_SIZE        64
+  #define RAWHID_RX_INTERVAL    1
+  #define SEREMU_INTERFACE      1	// Serial emulation
+  #define SEREMU_TX_ENDPOINT    1
+  #define SEREMU_TX_SIZE        64
+  #define SEREMU_TX_INTERVAL    1
+  #define SEREMU_RX_ENDPOINT    2
+  #define SEREMU_RX_SIZE        32
+  #define SEREMU_RX_INTERVAL    2
+  #define ENDPOINT1_CONFIG	ENDPOINT_TRANSIMIT_ONLY
+  #define ENDPOINT2_CONFIG	ENDPOINT_RECEIVE_ONLY
+  #define ENDPOINT3_CONFIG	ENDPOINT_TRANSIMIT_ONLY
+  #define ENDPOINT4_CONFIG	ENDPOINT_RECEIVE_ONLY
 
-/* Endpoint bEndpointAddress fields */
-#define USB_DESC_EP_ENDPOINT_ADDRESS_DIR_MASK  (0x1)
-#define USB_DESC_EP_ENDPOINT_ADDRESS_DIR_SHIFT (7)
-#define USB_DESC_EP_ENDPOINT_ADDRESS_DIR_POS   (USB_DESC_EP_ENDPOINT_ADDRESS_DIR_MASK << USB_DESC_EP_ENDPOINT_ADDRESS_DIR_SHIFT)
+#elif defined(USB_FLIGHTSIM)
+  #define VENDOR_ID		0x16C0
+  #define PRODUCT_ID		0x0488
+  #define MANUFACTURER_NAME	{'T','e','e','n','s','y','d','u','i','n','o'}
+  #define MANUFACTURER_NAME_LEN	11
+  #define PRODUCT_NAME		{'T','e','e','n','s','y',' ','F','l','i','g','h','t',' ','S','i','m',' ','C','o','n','t','r','o','l','s'}
+  #define PRODUCT_NAME_LEN	26
+  #define EP0_SIZE		64
+  #define NUM_ENDPOINTS         4
+  #define NUM_USB_BUFFERS	20
+  #define NUM_INTERFACE		2
+  #define FLIGHTSIM_INTERFACE	0	// Flight Sim Control
+  #define FLIGHTSIM_TX_ENDPOINT	3
+  #define FLIGHTSIM_TX_SIZE	64
+  #define FLIGHTSIM_TX_INTERVAL	1
+  #define FLIGHTSIM_RX_ENDPOINT	4
+  #define FLIGHTSIM_RX_SIZE	64
+  #define FLIGHTSIM_RX_INTERVAL	1
+  #define SEREMU_INTERFACE      1	// Serial emulation
+  #define SEREMU_TX_ENDPOINT    1
+  #define SEREMU_TX_SIZE        64
+  #define SEREMU_TX_INTERVAL    1
+  #define SEREMU_RX_ENDPOINT    2
+  #define SEREMU_RX_SIZE        32
+  #define SEREMU_RX_INTERVAL    2
+  #define ENDPOINT1_CONFIG	ENDPOINT_TRANSIMIT_ONLY
+  #define ENDPOINT2_CONFIG	ENDPOINT_RECEIVE_ONLY
+  #define ENDPOINT3_CONFIG	ENDPOINT_TRANSIMIT_ONLY
+  #define ENDPOINT4_CONFIG	ENDPOINT_RECEIVE_ONLY
 
-#define USB_DESC_EP_ENDPOINT_ADDRESS_EP_NUMBER_MASK  (0xF)
-#define USB_DESC_EP_ENDPOINT_ADDRESS_EP_NUMBER_SHIFT (0)
-#define USB_DESC_EP_ENDPOINT_ADDRESS_EP_NUMBER_POS   (USB_DESC_EP_ENDPOINT_ADDRESS_EP_NUMBER_MASK << USB_DESC_EP_ENDPOINT_ADDRESS_EP_NUMBER_SHIFT)
-
-#define USB_DESC_EP_ENDPOINT_ADDRESS_DIR_OUT ((0x0 & USB_DESC_EP_ENDPOINT_ADDRESS_DIR_MASK) << USB_DESC_EP_ENDPOINT_ADDRESS_DIR_SHIFT)
-#define USB_DESC_EP_ENDPOINT_ADDRESS_DIR_IN  ((0x1 & USB_DESC_EP_ENDPOINT_ADDRESS_DIR_MASK) << USB_DESC_EP_ENDPOINT_ADDRESS_DIR_SHIFT)
-
-/* Endpoint bmAttributes fields */
-#define USB_DESC_EP_ATTRIBUTES_TRANSFER_TYPE_MASK  (0x3)
-#define USB_DESC_EP_ATTRIBUTES_TRANSFER_TYPE_SHIFT (0)
-#define USB_DESC_EP_ATTRIBUTES_TRANSFER_TYPE_POS   (USB_DESC_EP_ATTRIBUTES_TRANSFER_TYPE_MASK << USB_DESC_EP_ATTRIBUTES_TRANSFER_TYPE_SHIFT)
-
-#define USB_DESC_EP_ATTRIBUTES_SYNC_TYPE_MASK  (0x3)
-#define USB_DESC_EP_ATTRIBUTES_SYNC_TYPE_SHIFT (2)
-#define USB_DESC_EP_ATTRIBUTES_SYNC_TYPE_POS   (USB_DESC_EP_ATTRIBUTES_SYNC_TYPE_MASK << USB_DESC_EP_ATTRIBUTES_SYNC_TYPE_SHIFT)
-
-#define USB_DESC_EP_ATTRIBUTES_USAGE_TYPE_MASK  (0x3)
-#define USB_DESC_EP_ATTRIBUTES_USAGE_TYPE_SHIFT (4)
-#define USB_DESC_EP_ATTRIBUTES_USAGE_TYPE_POS   (USB_DESC_EP_ATTRIBUTES_USAGE_TYPE_MASK << USB_DESC_EP_ATTRIBUTES_USAGE_TYPE_SHIFT)
-
-#define USB_DESC_EP_ATTRIBUTES_TRANSFER_TYPE_CONTROL     ((0x0 & USB_DESC_EP_ATTRIBUTES_TRANSFER_TYPE_MASK) << USB_DESC_EP_ATTRIBUTES_TRANSFER_TYPE_SHIFT)
-#define USB_DESC_EP_ATTRIBUTES_TRANSFER_TYPE_ISOCHRONOUS ((0x1 & USB_DESC_EP_ATTRIBUTES_TRANSFER_TYPE_MASK) << USB_DESC_EP_ATTRIBUTES_TRANSFER_TYPE_SHIFT)
-#define USB_DESC_EP_ATTRIBUTES_TRANSFER_TYPE_BULK        ((0x2 & USB_DESC_EP_ATTRIBUTES_TRANSFER_TYPE_MASK) << USB_DESC_EP_ATTRIBUTES_TRANSFER_TYPE_SHIFT)
-#define USB_DESC_EP_ATTRIBUTES_TRANSFER_TYPE_INTERRUPT   ((0x3 & USB_DESC_EP_ATTRIBUTES_TRANSFER_TYPE_MASK) << USB_DESC_EP_ATTRIBUTES_TRANSFER_TYPE_SHIFT)
-
-/* Standard Feature Selectors */
-#define USB_DEV_REQ_STD_FEATURE_SELECTOR_MASK   (0x3)
-#define USB_DEV_REQ_STD_FEATURE_SELECTOR_SHIFT  (0x0)
-#define USB_DEV_REQ_STD_FEATURE_SELECTOR_ENDPOINT_HALT         (0)
-#define USB_DEV_REQ_STD_FEATURE_SELECTOR_DEVICE_REMOTE_WAKEUP  (1)
-#define USB_DEV_REQ_STD_FEATURE_SELECTOR_TEST_MODE             (2)
-
-#define USB_DEV_REQ_STD_FEATURE_B_HNP_ENABLE       (0x0003) /* B HNP enable  SET/CLEAR feature value */
-#define USB_DEV_REQ_STD_FEATURE_A_HNP_SUPPORT      (0x0004) /* A HNP support SET/CLEAR feature value */
-
- typedef struct _usb_language 
-{
-    uint16_t language_id;
-    uint8_t ** lang_desc;
-    uint8_t * lang_desc_size;    
-} usb_language_t;
- 
-typedef struct _usb_all_languages
-{
-    uint8_t *languages_supported_string;
-    uint8_t  languages_supported_size;
-    uint8_t  languages_number;
-    /*Allocate Memory In App Layer*/
-    usb_language_t *usb_language;
-} usb_all_languages_t;
-
-PACKED_STRUCT_BEGIN
-struct usb_device_descriptor
-{
-   uint8_t   bLength;          /* Descriptor size in bytes = 18 */
-   uint8_t   bDescriptorType;  /* DEVICE descriptor type = 1 */
-   uint8_t   bcdUSD[2];        /* USB spec in BCD, e.g. 0x0200 */
-   uint8_t   bDeviceClass;     /* Class code, if 0 see interface */
-   uint8_t   bDeviceSubClass;  /* Sub-Class code, 0 if class = 0 */
-   uint8_t   bDeviceProtocol;  /* Protocol, if 0 see interface */
-   uint8_t   bMaxPacketSize;   /* Endpoint 0 max. size */
-   uint8_t   idVendor[2];      /* Vendor ID per USB-IF */
-   uint8_t   idProduct[2];     /* Product ID per manufacturer */
-   uint8_t   bcdDevice[2];     /* Device release # in BCD */
-   uint8_t   iManufacturer;    /* Index to manufacturer string */
-   uint8_t   iProduct;         /* Index to product string */
-   uint8_t   iSerialNumber;    /* Index to serial number string */
-   uint8_t   bNumConfigurations; /* Number of possible configurations */ 
-} PACKED_STRUCT_END;
-typedef struct usb_device_descriptor device_descriptor_t;
-
-PACKED_STRUCT_BEGIN
-struct usb_configuration_descriptor
-{
-   uint8_t   bLength;          /* Descriptor size in bytes = 9 */
-   uint8_t   bDescriptorType;  /* CONFIGURATION type = 2 or 7 */
-   uint8_t   wTotalLength[2];  /* Length of concatenated descriptors */
-   uint8_t   bNumInterfaces;   /* Number of interfaces, this config. */
-   uint8_t   bConfigurationValue;  /* Value to set this config. */ 
-   uint8_t   iConfig;          /* Index to configuration string */
-   uint8_t   bmAttributes;     /* Config. characteristics */
-   #define  CONFIG_RES7       (0x80)  /* Reserved, always = 1 */
-   #define  CONFIG_SELF_PWR   (0x40)  /* Self-powered device */
-   #define  CONFIG_WAKEUP     (0x20)  /* Remote wakeup */
-   uint8_t   bMaxPower;        /* Max.power from bus, 2mA units */
-} PACKED_STRUCT_END;
-typedef struct usb_configuration_descriptor usb_configuration_descriptor_t;  
-
-PACKED_STRUCT_BEGIN
-struct usb_interface_descriptor
-{
-   uint8_t   bLength;          /* Descriptor size in bytes = 9 */
-   uint8_t   bDescriptorType;  /* INTERFACE descriptor type = 4 */
-   uint8_t   bInterfaceNumber; /* Interface no.*/
-   uint8_t   bAlternateSetting;  /* Value to select this IF */
-   uint8_t   bNumEndpoints;    /* Number of endpoints excluding 0 */
-   uint8_t   bInterfaceClass;  /* Class code, 0xFF = vendor */
-   uint8_t   bInterfaceSubClass;  /* Sub-Class code, 0 if class = 0 */
-   uint8_t   bInterfaceProtocol;  /* Protocol, 0xFF = vendor */
-   uint8_t   iInterface;       /* Index to interface string */
-} PACKED_STRUCT_END;
-typedef struct usb_interface_descriptor interface_descriptor_t;  
-
-PACKED_STRUCT_BEGIN
-struct usb_endpoint_descriptor
-{
-   uint8_t   bLength;          /* Descriptor size in bytes = 7 */
-   uint8_t   bDescriptorType;  /* ENDPOINT descriptor type = 5 */
-   uint8_t   bEndpointAddress; /* Endpoint # 0 - 15 | IN/OUT */
-   #define  IN_ENDPOINT    (0x80)   /* IN endpoint, device to host */
-   #define  OUT_ENDPOINT   (0x00)   /* OUT endpoint, host to device */
-   #define  ENDPOINT_MASK  (0x0F)   /* Mask endpoint # */
-   uint8_t   bmAttributes;     /* Transfer type */
-   #define  CONTROL_ENDPOINT  (0x00)   /* Control transfers */
-   #define  ISOCH_ENDPOINT    (0x01)   /* Isochronous transfers */
-   #define  BULK_ENDPOINT     (0x02)   /* Bulk transfers */
-   #define  IRRPT_ENDPOINT    (0x03)   /* Interrupt transfers */
-   #define  EP_TYPE_MASK      (0x03)   /* Mask type bits */
-   /* Following must be zero except for isochronous endpoints */
-   #define  ISOCH_NOSYNC      (0x00)   /* No synchronization */
-   #define  ISOCH_ASYNC       (0x04)   /* Asynchronous */
-   #define  ISOCH_ADAPT       (0x08)   /* Adaptive */
-   #define  ISOCH_SYNCH       (0x0C)   /* Synchronous */
-   #define  ISOCH_DATA        (0x00)   /* Data endpoint */
-   #define  ISOCH_FEEDBACK    (0x10)   /* Feedback endpoint */
-   #define  ISOCH_IMPLICIT    (0x20)   /* Implicit feedback */
-   #define  ISOCH_RESERVED    (0x30)   /* Reserved */
-   uint8_t   wMaxPacketSize[2];   /* Bits 10:0 = max. packet size */
-   /* For high-speed interrupt or isochronous only, additional
-   **   transaction opportunities per microframe follow.*/
-   #define  PACKET_SIZE_MASK  (0x7FFu)  /* packet size bits */
-   #define  NO_ADDITONAL      (0x0000)   /* 1 / microframe */
-   #define  ONE_ADDITIONAL    (0x0800)   /* 2 / microframe */
-   #define  TWO_ADDITIONAL    (0x1000)   /* 3 / microframe */
-   #define  ADDITIONAL_MASK   (ONE_ADDITIONAL | TWO_ADDITIONAL)
-   #define  ADDITIONAL_POWER  (11)   
-   uint8_t   iInterval;        /* Polling interval in (micro) frames */
-} PACKED_STRUCT_END;
-typedef struct usb_endpoint_descriptor endpoint_descriptor_t;  
-
-PACKED_STRUCT_BEGIN
-struct usb_qualifier_descriptor
-{
-   uint8_t   bLength;          /* Descriptor size in bytes = 10 */
-   uint8_t   bDescriptorType;  /* DEVICE QUALIFIER type = 6 */
-   uint8_t   bcdUSD[2];        /* USB spec in BCD, e.g. 0x0200 */
-   uint8_t   bDeviceClass;     /* Class code, if 0 see interface */
-   uint8_t   bDeviceSubClass;  /* Sub-Class code, 0 if class = 0 */
-   uint8_t   bDeviceProtocol;  /* Protocol, if 0 see interface */
-   uint8_t   bMaxPacketSize;   /* Endpoint 0 max. size */
-   uint8_t   bNumConfigurations; /* Number of possible configurations */
-   uint8_t   bReserved;        /* Reserved = 0 */ 
-} PACKED_STRUCT_END;
-typedef struct usb_qualifier_descriptor qualifier_descriptor_t;  
-
-/* Other-Config type 7 fields are identical to type 2 above */
-
-/* Interface-Power descriptor  type 8 not used  in this version */
-
-PACKED_STRUCT_BEGIN
-struct usb_otg_descriptor
-{
-   uint8_t   bLength;          /* Descriptor size in bytes = 9 */
-   uint8_t   bDescriptorType;  /* CONFIGURATION type = 2 or 7 */
-   uint8_t   bmAttributes;     /* OTG characteristics */
-   #define  OTG_SRP_SUPPORT   (0x01)  /* Supports SRP */
-   #define  OTG_HNP_SUPPORT   (0x02)  /* Supports HNP */
-} PACKED_STRUCT_END;
-typedef struct usb_otg_descriptor otg_descriptor_t;  
-
-PACKED_STRUCT_BEGIN
-struct usb_common_descriptor
-{
-   uint8_t   bLength;          /* Descriptor size in bytes = 9 */
-   uint8_t   bDescriptorType;  /* CONFIGURATION type = 2 or 7 */
-} PACKED_STRUCT_END;
-typedef struct usb_common_descriptor common_descriptor_t;
-
-
-typedef union descriptor_union
-{
-   uint32_t                      word;
-   uint8_t *                     bufr;
-   void*                         pntr;
-   device_descriptor_t         dvic;
-   usb_configuration_descriptor_t*  cfig;
-   interface_descriptor_t*      intf;
-   endpoint_descriptor_t*       ndpt;
-   qualifier_descriptor_t*      qual;
-   otg_descriptor_t*            otg;
-   common_descriptor_t*         common;
-} descriptor_union_t;
-
-#define USB_uint_16_low(x)          ((x) & 0xFF)
-#define USB_uint_16_high(x)         ((uint8_t)((x) >> 8) & 0xFF)
+#elif defined(USB_FLIGHTSIM_JOYSTICK)
+  #define VENDOR_ID		0x16C0
+  #define PRODUCT_ID		0x04D9
+  #define MANUFACTURER_NAME	{'T','e','e','n','s','y','d','u','i','n','o'}
+  #define MANUFACTURER_NAME_LEN	11
+  #define PRODUCT_NAME		{'T','e','e','n','s','y',' ','F','l','i','g','h','t',' ','S','i','m',' ','C','o','n','t','r','o','l','s'}
+  #define PRODUCT_NAME_LEN	26
+  #define EP0_SIZE		64
+  #define NUM_ENDPOINTS         5
+  #define NUM_USB_BUFFERS	20
+  #define NUM_INTERFACE		3
+  #define FLIGHTSIM_INTERFACE	0	// Flight Sim Control
+  #define FLIGHTSIM_TX_ENDPOINT	3
+  #define FLIGHTSIM_TX_SIZE	64
+  #define FLIGHTSIM_TX_INTERVAL	1
+  #define FLIGHTSIM_RX_ENDPOINT	4
+  #define FLIGHTSIM_RX_SIZE	64
+  #define FLIGHTSIM_RX_INTERVAL	1
+  #define SEREMU_INTERFACE      1	// Serial emulation
+  #define SEREMU_TX_ENDPOINT    1
+  #define SEREMU_TX_SIZE        64
+  #define SEREMU_TX_INTERVAL    1
+  #define SEREMU_RX_ENDPOINT    2
+  #define SEREMU_RX_SIZE        32
+  #define SEREMU_RX_INTERVAL    2
+  #define JOYSTICK_INTERFACE    2	// Joystick
+  #define JOYSTICK_ENDPOINT     5
+  #define JOYSTICK_SIZE         12	//  12 = normal, 64 = extreme joystick
+  #define JOYSTICK_INTERVAL     1
+  #define ENDPOINT1_CONFIG	ENDPOINT_TRANSIMIT_ONLY
+  #define ENDPOINT2_CONFIG	ENDPOINT_RECEIVE_ONLY
+  #define ENDPOINT3_CONFIG	ENDPOINT_TRANSIMIT_ONLY
+  #define ENDPOINT4_CONFIG	ENDPOINT_RECEIVE_ONLY
+  #define ENDPOINT5_CONFIG	ENDPOINT_TRANSIMIT_ONLY
 
 
-/* Prototypes */
+#elif defined(USB_MTPDISK)
+  #define VENDOR_ID		0x16C0
+  #define PRODUCT_ID		0x04D1
+  #define MANUFACTURER_NAME	{'T','e','e','n','s','y','d','u','i','n','o'}
+  #define MANUFACTURER_NAME_LEN	11
+  #define PRODUCT_NAME		{'T','e','e','n','s','y',' ','M','T','P',' ','D','i','s','k'}
+  #define PRODUCT_NAME_LEN	15
+  #define EP0_SIZE		64
+  #define NUM_ENDPOINTS         4
+  #define NUM_USB_BUFFERS	20
+  #define NUM_INTERFACE		2
+  #define MTP_INTERFACE		0	// MTP Disk
+  #define MTP_TX_ENDPOINT	3
+  #define MTP_TX_SIZE		64
+  #define MTP_RX_ENDPOINT	3
+  #define MTP_RX_SIZE		64
+  #define MTP_EVENT_ENDPOINT	4
+  #define MTP_EVENT_SIZE	16
+  #define MTP_EVENT_INTERVAL	10
+  #define SEREMU_INTERFACE      1	// Serial emulation
+  #define SEREMU_TX_ENDPOINT    1
+  #define SEREMU_TX_SIZE        64
+  #define SEREMU_TX_INTERVAL    1
+  #define SEREMU_RX_ENDPOINT    2
+  #define SEREMU_RX_SIZE        32
+  #define SEREMU_RX_INTERVAL    2
+  #define ENDPOINT1_CONFIG	ENDPOINT_TRANSIMIT_ONLY
+  #define ENDPOINT2_CONFIG	ENDPOINT_RECEIVE_ONLY
+  #define ENDPOINT3_CONFIG	ENDPOINT_TRANSMIT_AND_RECEIVE
+  #define ENDPOINT4_CONFIG	ENDPOINT_RECEIVE_ONLY
 
-#ifdef __cplusplus
-extern "C" {
+#elif defined(USB_AUDIO)
+  #define VENDOR_ID		0x16C0
+  #define PRODUCT_ID		0x04D2
+  #define MANUFACTURER_NAME	{'T','e','e','n','s','y','d','u','i','n','o'}
+  #define MANUFACTURER_NAME_LEN	11
+  #define PRODUCT_NAME		{'T','e','e','n','s','y',' ','A','u','d','i','o'}
+  #define PRODUCT_NAME_LEN	12
+  #define EP0_SIZE		64
+  #define NUM_ENDPOINTS         5
+  #define NUM_USB_BUFFERS	16
+  #define NUM_INTERFACE		4
+  #define SEREMU_INTERFACE      0	// Serial emulation
+  #define SEREMU_TX_ENDPOINT    1
+  #define SEREMU_TX_SIZE        64
+  #define SEREMU_TX_INTERVAL    1
+  #define SEREMU_RX_ENDPOINT    2
+  #define SEREMU_RX_SIZE        32
+  #define SEREMU_RX_INTERVAL    2
+  #define AUDIO_INTERFACE	1	// Audio (uses 3 consecutive interfaces)
+  #define AUDIO_TX_ENDPOINT     3
+  #define AUDIO_TX_SIZE         180
+  #define AUDIO_RX_ENDPOINT     4
+  #define AUDIO_RX_SIZE         180
+  #define AUDIO_SYNC_ENDPOINT	5
+  #define ENDPOINT1_CONFIG	ENDPOINT_TRANSIMIT_ONLY
+  #define ENDPOINT2_CONFIG	ENDPOINT_RECEIVE_ONLY
+  #define ENDPOINT3_CONFIG	ENDPOINT_TRANSMIT_ISOCHRONOUS
+  #define ENDPOINT4_CONFIG	ENDPOINT_RECEIVE_ISOCHRONOUS
+  #define ENDPOINT5_CONFIG	ENDPOINT_TRANSMIT_ISOCHRONOUS
+
+#elif defined(USB_MIDI_AUDIO_SERIAL)
+  #define VENDOR_ID		0x16C0
+  #define PRODUCT_ID		0x048A
+  #define MANUFACTURER_NAME	{'T','e','e','n','s','y','d','u','i','n','o'}
+  #define MANUFACTURER_NAME_LEN	11
+  #define PRODUCT_NAME		{'T','e','e','n','s','y',' ','M','I','D','I','/','A','u','d','i','o'}
+  #define PRODUCT_NAME_LEN	17
+  #define EP0_SIZE		64
+  #define NUM_ENDPOINTS         8
+  #define NUM_USB_BUFFERS	30
+  #define NUM_INTERFACE		6
+  #define CDC_IAD_DESCRIPTOR	1
+  #define CDC_STATUS_INTERFACE	0
+  #define CDC_DATA_INTERFACE	1	// Serial
+  #define CDC_ACM_ENDPOINT	1
+  #define CDC_RX_ENDPOINT       2
+  #define CDC_TX_ENDPOINT       3
+  #define CDC_ACM_SIZE          16
+  #define CDC_RX_SIZE           64
+  #define CDC_TX_SIZE           64
+  #define MIDI_INTERFACE        2	// MIDI
+  #define MIDI_TX_ENDPOINT      4
+  #define MIDI_TX_SIZE          64
+  #define MIDI_RX_ENDPOINT      5
+  #define MIDI_RX_SIZE          64
+  #define AUDIO_INTERFACE	3	// Audio (uses 3 consecutive interfaces)
+  #define AUDIO_TX_ENDPOINT     6
+  #define AUDIO_TX_SIZE         180
+  #define AUDIO_RX_ENDPOINT     7
+  #define AUDIO_RX_SIZE         180
+  #define AUDIO_SYNC_ENDPOINT	8
+  #define ENDPOINT1_CONFIG	ENDPOINT_TRANSIMIT_ONLY
+  #define ENDPOINT2_CONFIG	ENDPOINT_RECEIVE_ONLY
+  #define ENDPOINT3_CONFIG	ENDPOINT_TRANSIMIT_ONLY
+  #define ENDPOINT4_CONFIG	ENDPOINT_TRANSIMIT_ONLY
+  #define ENDPOINT5_CONFIG	ENDPOINT_RECEIVE_ONLY
+  #define ENDPOINT6_CONFIG	ENDPOINT_TRANSMIT_ISOCHRONOUS
+  #define ENDPOINT7_CONFIG	ENDPOINT_RECEIVE_ISOCHRONOUS
+  #define ENDPOINT8_CONFIG	ENDPOINT_TRANSMIT_ISOCHRONOUS
+
+#elif defined(USB_EVERYTHING)
+  #define VENDOR_ID		0x16C0
+  #define PRODUCT_ID		0x0476
+  #define RAWHID_USAGE_PAGE	0xFFAB  // recommended: 0xFF00 to 0xFFFF
+  #define RAWHID_USAGE		0x0200  // recommended: 0x0100 to 0xFFFF
+  #define DEVICE_CLASS		0xEF
+  #define DEVICE_SUBCLASS	0x02
+  #define DEVICE_PROTOCOL	0x01
+  #define MANUFACTURER_NAME	{'T','e','e','n','s','y','d','u','i','n','o'}
+  #define MANUFACTURER_NAME_LEN	11
+  #define PRODUCT_NAME		{'A','l','l',' ','T','h','e',' ','T','h','i','n','g','s'}
+  #define PRODUCT_NAME_LEN	14
+  #define EP0_SIZE		64
+  #define NUM_ENDPOINTS         15
+  #define NUM_USB_BUFFERS	31
+  #define NUM_INTERFACE		13
+  #define CDC_IAD_DESCRIPTOR	1
+  #define CDC_STATUS_INTERFACE	0
+  #define CDC_DATA_INTERFACE	1	// Serial
+  #define CDC_ACM_ENDPOINT	1
+  #define CDC_RX_ENDPOINT       2
+  #define CDC_TX_ENDPOINT       2
+  #define CDC_ACM_SIZE          16
+  #define CDC_RX_SIZE           64
+  #define CDC_TX_SIZE           64
+  #define MIDI_INTERFACE        2	// MIDI
+  #define MIDI_TX_ENDPOINT      3
+  #define MIDI_TX_SIZE          64
+  #define MIDI_RX_ENDPOINT      3
+  #define MIDI_RX_SIZE          64
+  #define KEYBOARD_INTERFACE    3	// Keyboard
+  #define KEYBOARD_ENDPOINT     4
+  #define KEYBOARD_SIZE         8
+  #define KEYBOARD_INTERVAL     1
+  #define MOUSE_INTERFACE       4	// Mouse
+  #define MOUSE_ENDPOINT        5
+  #define MOUSE_SIZE            8
+  #define MOUSE_INTERVAL        2
+  #define RAWHID_INTERFACE      5	// RawHID
+  #define RAWHID_TX_ENDPOINT    6
+  #define RAWHID_TX_SIZE        64
+  #define RAWHID_TX_INTERVAL    1
+  #define RAWHID_RX_ENDPOINT    6
+  #define RAWHID_RX_SIZE        64
+  #define RAWHID_RX_INTERVAL    1
+  #define FLIGHTSIM_INTERFACE	6	// Flight Sim Control
+  #define FLIGHTSIM_TX_ENDPOINT	9
+  #define FLIGHTSIM_TX_SIZE	64
+  #define FLIGHTSIM_TX_INTERVAL	1
+  #define FLIGHTSIM_RX_ENDPOINT	9
+  #define FLIGHTSIM_RX_SIZE	64
+  #define FLIGHTSIM_RX_INTERVAL	1
+  #define JOYSTICK_INTERFACE    7	// Joystick
+  #define JOYSTICK_ENDPOINT     10
+  #define JOYSTICK_SIZE         12	//  12 = normal, 64 = extreme joystick
+  #define JOYSTICK_INTERVAL     1
+/*
+  #define MTP_INTERFACE		8	// MTP Disk
+  #define MTP_TX_ENDPOINT	11
+  #define MTP_TX_SIZE		64
+  #define MTP_RX_ENDPOINT	3
+  #define MTP_RX_SIZE		64
+  #define MTP_EVENT_ENDPOINT	11
+  #define MTP_EVENT_SIZE	16
+  #define MTP_EVENT_INTERVAL	10
+*/
+  #define KEYMEDIA_INTERFACE    8	// Keyboard Media Keys
+  #define KEYMEDIA_ENDPOINT     12
+  #define KEYMEDIA_SIZE         8
+  #define KEYMEDIA_INTERVAL     4
+  #define AUDIO_INTERFACE	9	// Audio (uses 3 consecutive interfaces)
+  #define AUDIO_TX_ENDPOINT     13
+  #define AUDIO_TX_SIZE         180
+  #define AUDIO_RX_ENDPOINT     13
+  #define AUDIO_RX_SIZE         180
+  #define AUDIO_SYNC_ENDPOINT	14
+  #define MULTITOUCH_INTERFACE  12	// Touchscreen
+  #define MULTITOUCH_ENDPOINT   15
+  #define MULTITOUCH_SIZE       9
+  #define MULTITOUCH_FINGERS    10
+  #define ENDPOINT1_CONFIG	ENDPOINT_TRANSIMIT_ONLY
+  #define ENDPOINT2_CONFIG	ENDPOINT_TRANSMIT_AND_RECEIVE
+  #define ENDPOINT3_CONFIG	ENDPOINT_TRANSMIT_AND_RECEIVE
+  #define ENDPOINT4_CONFIG	ENDPOINT_TRANSIMIT_ONLY
+  #define ENDPOINT5_CONFIG	ENDPOINT_TRANSIMIT_ONLY
+  #define ENDPOINT6_CONFIG	ENDPOINT_TRANSMIT_AND_RECEIVE
+  #define ENDPOINT7_CONFIG	ENDPOINT_TRANSMIT_AND_RECEIVE
+  #define ENDPOINT8_CONFIG	ENDPOINT_TRANSIMIT_ONLY
+  #define ENDPOINT9_CONFIG	ENDPOINT_TRANSMIT_AND_RECEIVE
+  #define ENDPOINT10_CONFIG	ENDPOINT_TRANSIMIT_ONLY
+  #define ENDPOINT11_CONFIG	ENDPOINT_TRANSMIT_AND_RECEIVE
+  #define ENDPOINT12_CONFIG	ENDPOINT_TRANSIMIT_ONLY
+  #define ENDPOINT13_CONFIG	(ENDPOINT_RECEIVE_ISOCHRONOUS|ENDPOINT_TRANSMIT_ISOCHRONOUS)
+  #define ENDPOINT14_CONFIG	ENDPOINT_TRANSMIT_ISOCHRONOUS
+  #define ENDPOINT15_CONFIG	ENDPOINT_TRANSIMIT_ONLY
+
 #endif
 
-#ifdef __cplusplus
-}
-#endif
+#ifdef USB_DESC_LIST_DEFINE
+#if defined(NUM_ENDPOINTS) && NUM_ENDPOINTS > 0
+// NUM_ENDPOINTS = number of non-zero endpoints (0 to 15)
+extern const uint8_t usb_endpoint_config_table[NUM_ENDPOINTS];
+
+typedef struct {
+	uint16_t	wValue;
+	uint16_t	wIndex;
+	const uint8_t	*addr;
+	uint16_t	length;
+} usb_descriptor_list_t;
+
+extern const usb_descriptor_list_t usb_descriptor_list[];
+#endif // NUM_ENDPOINTS
+#endif // USB_DESC_LIST_DEFINE
 
 #endif

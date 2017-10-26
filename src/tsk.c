@@ -28,7 +28,7 @@ static void idle_init()
 static void idle_poll()
 {
     // Toggle LED
-    //PTC->PTOR = LED;
+    PTC->PTOR = LED;
 }
 
 static task_t task_table[] = {

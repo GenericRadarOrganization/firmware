@@ -5,4 +5,6 @@
 
 #define cnt_of_array(x) ((sizeof(x)/sizeof(0[x])) / ((size_t)(!(sizeof(x) % sizeof(0[x])))))
 
+char *ultoa (unsigned long val, char *s, int radix);
+
 #endif

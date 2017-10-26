@@ -5,5 +5,6 @@
 
 void systick_init(void);
 
+volatile uint32_t systick_millis_count;
 uint32_t millis(void);
 #endif
