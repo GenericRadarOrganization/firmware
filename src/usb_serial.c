@@ -199,7 +199,7 @@ int usb_serial_write(const void *buffer, uint32_t size)
 	while (size > 0) {
 		if (!tx_packet) {
 			wait_count = 0;
-			//while (1) {
+			while (1) {
 				if (!usb_configuration) {
 					tx_noautoflush = 0;
 					return -1;
@@ -215,7 +215,7 @@ int usb_serial_write(const void *buffer, uint32_t size)
 					return -1;
 				}
 				//yield();
-			//}
+			}
 		}
 		transmit_previous_timeout = 0;
 		len = CDC_TX_SIZE - tx_packet->index;

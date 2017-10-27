@@ -3,6 +3,7 @@
 #include "tsk.h"
 
 #include "usb_dev.h"
+#include "usb_serial.h"
 
 #define LED  (1U << 5)
 
@@ -12,7 +13,6 @@ int main(void)
     systick_init();
     usb_init();
     tsk_init();
-
 
     while(1){
         tsk_main();
