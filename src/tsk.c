@@ -3,7 +3,11 @@
 #include "MKL26Z4.h"
 #include "helpers.h"
 #include "systick.h"
+#include "adc.h"
+#include "dma.h"
 #include "usb_serial.h"
+#include "adc_proc.h"
+#include <stdio.h>
 
 #define LED  (1U << 5)
 
@@ -28,13 +32,12 @@ static void idle_init()
 
 static void idle_poll()
 {
-    // Toggle LED
-    PTC->PTOR = LED;
-    usb_serial_write("ASDF\n",sizeof("ASDF\n"));
+    PTC->PTOR = LED;    
 }
 
 static task_t task_table[] = {
-    {idle_init,idle_poll,0,1000}
+    {idle_init,idle_poll,0,500},
+    {adc_proc_init,adc_proc_loop,0,10}
 };
 
 void tsk_init(void){

@@ -4,6 +4,8 @@
         "mkl26z4.h": "c",
         "core_pins.h": "c",
         "stdlib.h": "c",
-        "cstdlib": "c"
+        "cstdlib": "c",
+        "string.h": "c",
+        "fixup.h": "c"
     }
 }

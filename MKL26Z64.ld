@@ -34,6 +34,7 @@ MEMORY
 	RAM  (rwx) : ORIGIN = 0x1FFFF800, LENGTH = 8K
 }
 
+HEAP_SIZE  = DEFINED(__heap_size__)  ? __heap_size__  : 0x0200;
 
 SECTIONS
 {
@@ -105,6 +106,15 @@ SECTIONS
 		__bss_end = .;
 		__bss_end__ = .;
 	} > RAM
+
+	.heap : {
+		. = ALIGN(8);
+		__end__ = .;
+		PROVIDE(end = .);
+		__HeapBase = .;
+		. += HEAP_SIZE;
+		__HeapLimit = .;
+  	} > m_data
 
 	_estack = ORIGIN(RAM) + LENGTH(RAM);
 }

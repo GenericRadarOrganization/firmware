@@ -22,7 +22,7 @@ ASFLAGS = -x assembler-with-cpp
 CFLAGS =
 
 # linker options
-LDFLAGS = -nostartfiles -Wl,--gc-sections,--no-wchar-size-warning --specs=nano.specs -mcpu=cortex-m0plus -mthumb -T$(MCU_LD)
+LDFLAGS = -nostartfiles -Wl,--gc-sections,--no-wchar-size-warning --specs=nano.specs -specs=nosys.specs -mcpu=cortex-m0plus -mthumb -T$(MCU_LD)
 
 # additional libraries to link
 LIBS = -lm
