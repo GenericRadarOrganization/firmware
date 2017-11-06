@@ -1,6 +1,8 @@
 #ifndef LCD_H
 #define LCD_H
 
+#include "MKL26Z4.h"
+
 // some flags for initR() :(
 
 #define DELAY 0x80
@@ -80,7 +82,22 @@
 #define ST7735_YELLOW  0xFFE0
 #define ST7735_WHITE   0xFFFF
 
+#ifndef _swap_int16_t
+#define _swap_int16_t(a, b) { int16_t t = a; a = b; b = t; }
+#endif
+
 void lcd_init(void);
 void lcd_setRotation(uint8_t m);
+
+void lcd_setAddrWindow(uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1);
+void lcd_pushColor(uint16_t color);
+void lcd_drawPixel(int16_t x, int16_t y, uint16_t color);
+void lcd_drawFastVLine(int16_t x, int16_t y, int16_t h, uint16_t color);
+void lcd_drawFastHLine(int16_t x, int16_t y, int16_t w, uint16_t color);
+void lcd_fillScreen(uint16_t color);
+void lcd_fillRect(int16_t x, int16_t y, int16_t w, int16_t h, uint16_t color);
+uint16_t lcd_Color565(uint8_t r, uint8_t g, uint8_t b);
+
+void lcd_drawLine(int16_t x0, int16_t y0, int16_t x1, int16_t y1, uint16_t color);
 
 #endif

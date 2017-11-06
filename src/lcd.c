@@ -5,6 +5,8 @@
 #include "debug.h"
 #include "config.h"
 
+#include <stdlib.h>
+
 #define MADCTL_MY  0x80
 #define MADCTL_MX  0x40
 #define MADCTL_MV  0x20
@@ -82,36 +84,38 @@ Rcmd3[] = {                 // Init for 7735R, part 3 (red or green tab)
 
 static uint8_t writeByte(uint8_t c)
 {
-  uint8_t dummy_read;
-    // Wait until SPI is ready
-    if(SPI0->S & SPI_S_SPRF_MASK){
-      dummy_read = SPI0->DL;
-    }
+    uint8_t dummy_read;
+    // Wait until SPI is ready to tx
     while(!(SPI0->S & SPI_S_SPTEF_MASK));
+
     SPI0->DL = c;
+    // Wait until rx is ready
+    while(!(SPI0->S & SPI_S_SPRF_MASK));
+
+    dummy_read = SPI0->DL;
     return dummy_read;
 }
 
 static void writeCommand(uint8_t c)
 {
-    PTC->PCOR |= (1<<DC_NUM);
-    PTC->PCOR |= (1<<CS_NUM);
+    PTD->PCOR |= (1<<DC_NUM);
+    PTD->PCOR |= (1<<CS_NUM);
     // Location in memory will be valid until function ends.
     // We have to wait
     //dma_spi_tx_wait(&c,1);
     writeByte(c);
-    PTC->PSOR |= (1<<CS_NUM);
+    PTD->PSOR |= (1<<CS_NUM);
 }
 
 static void writeData(uint8_t c)
 {
-    PTC->PSOR |= (1<<DC_NUM);
-    PTC->PCOR |= (1<<CS_NUM);
+    PTD->PSOR |= (1<<DC_NUM);
+    PTD->PCOR |= (1<<CS_NUM);
     // Location in memory will be valid until function ends.
     // We have to wait
     //dma_spi_tx_wait(c,len);
     writeByte(c);
-    PTC->PSOR |= (1<<CS_NUM);
+    PTD->PSOR |= (1<<CS_NUM);
 }
 
 static void commandList(uint8_t* addr)
@@ -146,7 +150,7 @@ void lcd_init(void)
 {
     uint32_t waittime;
     // Pull RS & CS low
-    PTC->PCOR |= (1<<CS_NUM);
+    PTD->PCOR |= (1<<CS_NUM);
 
     PTD->PSOR |= (1<<RS_NUM);
     waittime=millis()+500;
@@ -254,3 +258,210 @@ void lcd_setRotation(uint8_t m) {
        break;
     }
   }
+
+
+  // 
+  void lcd_setAddrWindow(uint8_t x0, uint8_t y0, uint8_t x1,
+    uint8_t y1) {
+   
+     writeCommand(ST7735_CASET); // Column addr set
+     writeData(0x00);
+     writeData(x0+xstart);     // XSTART 
+     writeData(0x00);
+     writeData(x1+xstart);     // XEND
+   
+     writeCommand(ST7735_RASET); // Row addr set
+     writeData(0x00);
+     writeData(y0+ystart);     // YSTART
+     writeData(0x00);
+     writeData(y1+ystart);     // YEND
+   
+     writeCommand(ST7735_RAMWR); // write to RAM
+   }
+   
+   
+   void lcd_pushColor(uint16_t color) {
+   #if defined (SPI_HAS_TRANSACTION)
+     if (hwSPI)    SPI.beginTransaction(mySPISettings);
+   #endif
+   
+     PTD->PSOR |= (1<<DC_NUM);
+     PTD->PCOR |= (1<<CS_NUM);
+     writeByte(color >> 8);
+     writeByte(color);
+     PTD->PSOR |= (1<<CS_NUM);
+   
+   #if defined (SPI_HAS_TRANSACTION)
+     if (hwSPI)    SPI.endTransaction();
+   #endif
+   }
+   
+   void lcd_drawPixel(int16_t x, int16_t y, uint16_t color) {
+   
+     if((x < 0) ||(x >= _width) || (y < 0) || (y >= _height)) return;
+   
+     lcd_setAddrWindow(x,y,x+1,y+1);
+   
+   #if defined (SPI_HAS_TRANSACTION)
+     if (hwSPI)     SPI.beginTransaction(mySPISettings);
+   #endif
+   
+     PTD->PSOR |= (1<<DC_NUM);
+     PTD->PCOR |= (1<<CS_NUM);
+     writeByte(color >> 8);
+     writeByte(color);
+     PTD->PSOR |= (1<<CS_NUM);
+   
+   #if defined (SPI_HAS_TRANSACTION)
+     if (hwSPI)     SPI.endTransaction();
+   #endif
+   }
+   
+   
+   void lcd_drawFastVLine(int16_t x, int16_t y, int16_t h,
+    uint16_t color) {
+   
+     // Rudimentary clipping
+     if((x >= _width) || (y >= _height)) return;
+     if((y+h-1) >= _height) h = _height-y;
+     lcd_setAddrWindow(x, y, x, y+h-1);
+   
+     uint8_t hi = color >> 8, lo = color;
+       
+   #if defined (SPI_HAS_TRANSACTION)
+     if (hwSPI)      SPI.beginTransaction(mySPISettings);
+   #endif
+   
+     PTD->PSOR |= (1<<DC_NUM);
+     PTD->PCOR |= (1<<CS_NUM);
+     while (h--) {
+       writeByte(hi);
+       writeByte(lo);
+     }
+     PTD->PSOR |= (1<<CS_NUM);
+   
+   #if defined (SPI_HAS_TRANSACTION)
+     if (hwSPI)      SPI.endTransaction();
+   #endif
+   }
+   
+   
+   void lcd_drawFastHLine(int16_t x, int16_t y, int16_t w,
+     uint16_t color) {
+   
+     // Rudimentary clipping
+     if((x >= _width) || (y >= _height)) return;
+     if((x+w-1) >= _width)  w = _width-x;
+     lcd_setAddrWindow(x, y, x+w-1, y);
+   
+     uint8_t hi = color >> 8, lo = color;
+   
+     PTD->PSOR |= (1<<DC_NUM);
+     PTD->PCOR |= (1<<CS_NUM);
+     while (w--) {
+       writeByte(hi);
+       writeByte(lo);
+     }
+     PTD->PSOR |= (1<<CS_NUM);
+   }
+   
+   
+   
+   void lcd_fillScreen(uint16_t color) {
+     lcd_fillRect(0, 0,  _width, _height, color);
+   }
+   
+   
+   
+   // fill a rectangle
+   void lcd_fillRect(int16_t x, int16_t y, int16_t w, int16_t h,
+     uint16_t color) {
+   
+     // rudimentary clipping (drawChar w/big text requires this)
+     if((x >= _width) || (y >= _height)) return;
+     if((x + w - 1) >= _width)  w = _width  - x;
+     if((y + h - 1) >= _height) h = _height - y;
+   
+     lcd_setAddrWindow(x, y, x+w-1, y+h-1);
+   
+     uint8_t hi = color >> 8, lo = color;
+       
+   #if defined (SPI_HAS_TRANSACTION)
+     if (hwSPI)      SPI.beginTransaction(mySPISettings);
+   #endif
+   
+     PTD->PSOR |= (1<<DC_NUM);
+     PTD->PCOR |= (1<<CS_NUM);
+     for(y=h; y>0; y--) {
+       for(x=w; x>0; x--) {
+         writeByte(hi);
+         writeByte(lo);
+       }
+     }
+     PTD->PSOR |= (1<<CS_NUM);
+   
+   #if defined (SPI_HAS_TRANSACTION)
+     if (hwSPI)      SPI.endTransaction();
+   #endif
+   }
+   
+   
+   // Pass 8-bit (each) R,G,B, get back 16-bit packed color
+   uint16_t lcd_Color565(uint8_t r, uint8_t g, uint8_t b) {
+     return ((r & 0xF8) << 8) | ((g & 0xFC) << 3) | (b >> 3);
+   }
+
+
+void lcd_writeLine(int16_t x0, int16_t y0, int16_t x1, int16_t y1,
+  uint16_t color) {
+  int16_t steep = abs(y1 - y0) > abs(x1 - x0);
+  if (steep) {
+    _swap_int16_t(x0, y0);
+    _swap_int16_t(x1, y1);
+  }
+
+  if (x0 > x1) {
+    _swap_int16_t(x0, x1);
+    _swap_int16_t(y0, y1);
+  }
+
+  int16_t dx, dy;
+  dx = x1 - x0;
+  dy = abs(y1 - y0);
+
+  int16_t err = dx / 2;
+  int16_t ystep;
+
+  if (y0 < y1) {
+    ystep = 1;
+  } else {
+    ystep = -1;
+  }
+
+  for (; x0<=x1; x0++) {
+    if (steep) {
+        lcd_drawPixel(y0, x0, color);
+    } else {
+        lcd_drawPixel(x0, y0, color);
+    }
+    err -= dy;
+    if (err < 0) {
+        y0 += ystep;
+        err += dx;
+    }
+  }
+}
+
+void lcd_drawLine(int16_t x0, int16_t y0, int16_t x1, int16_t y1,
+  uint16_t color) {
+  // Update in subclasses if desired!
+  if(x0 == x1){
+    if(y0 > y1) _swap_int16_t(y0, y1);
+    lcd_drawFastVLine(x0, y0, y1 - y0 + 1, color);
+  } else if(y0 == y1){
+    if(x0 > x1) _swap_int16_t(x0, x1);
+    lcd_drawFastHLine(x0, y0, x1 - x0 + 1, color);
+  } else {
+    lcd_writeLine(x0, y0, x1, y1, color);
+  }
+}

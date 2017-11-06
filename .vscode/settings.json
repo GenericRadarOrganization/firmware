@@ -6,6 +6,7 @@
         "stdlib.h": "c",
         "cstdlib": "c",
         "string.h": "c",
-        "fixup.h": "c"
+        "fixup.h": "c",
+        "config.h": "c"
     }
 }

@@ -8,6 +8,7 @@
 #include "lcd.h"
 #include "usb_serial.h"
 #include "adc_proc.h"
+#include "gui.h"
 #include <stdio.h>
 
 #define LED  (1U << 5)
@@ -27,7 +28,6 @@ static void idle_init()
     // Set LED direction
     PTC->PDDR |= LED;
     //PTC->PSOR = LED;
-    lcd_init();
 }
 
 static void idle_poll()
@@ -37,7 +37,8 @@ static void idle_poll()
 
 static task_t task_table[] = {
     {idle_init,idle_poll,0,500},
-    {adc_proc_init,adc_proc_loop,0,10}
+    {adc_proc_init,adc_proc_loop,0,10},
+    {gui_init,gui_loop,0,20}
 };
 
 void tsk_init(void){

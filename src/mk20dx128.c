@@ -314,7 +314,7 @@ void ResetHandler(void)
 
 	// now program the clock dividers
 	// config divisors: 48 MHz core, 48 MHz bus, 24 MHz flash, USB = 96 / 2
-	SIM_CLKDIV1 = SIM_CLKDIV1_OUTDIV1(1) | SIM_CLKDIV1_OUTDIV4(3);
+	SIM_CLKDIV1 = SIM_CLKDIV1_OUTDIV1(1) | SIM_CLKDIV1_OUTDIV4(1);
 
 	// switch to PLL as clock source, FLL input = 16 MHz / 512
 	MCG_C1 = MCG_C1_CLKS(0) | MCG_C1_FRDIV(4);

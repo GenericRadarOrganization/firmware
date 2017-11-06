@@ -8,8 +8,8 @@
 #define DMA_ADC_RESULT_CHANNEL 1
 #define DMA_SPI_CHANNEL 2 // Use a non-periodic-capable channel
 
-#define DC_NUM 3
-#define RS_NUM 3
+#define DC_NUM 2
+#define RS_NUM 7
 #define CS_NUM 4
 
 #endif
