@@ -10,7 +10,7 @@ void dma_init(void)
 {
     // Gate the clock
     SIM->SCGC7 |= SIM_SCGC7_DMA_MASK;
-    SIM->SCGC6 |= SIM_SCGC6_DMAMUX_MASK | SIM_SCGC6_PIT_MASK;
+    SIM->SCGC6 |= SIM_SCGC6_DMAMUX_MASK;
 }
 
 static void configure_adc_trigger()
@@ -71,11 +71,43 @@ void dma_conf_adc_trigger(uint32_t sc1_val)
     //SIM->SOPT7 |= SIM_SOPT7_ADC0ALTTRGEN_MASK | SIM_SOPT7_ADC0TRGSEL(4);
 }
 
+void dma_conf_spi()
+{
+    DMAMUX0_CHCFG(DMA_SPI_CHANNEL) = 0;
+    DMAMUX0_CHCFG(DMA_SPI_CHANNEL) = DMAMUX_CHCFG_SOURCE(17);
+    DMAMUX0_CHCFG(DMA_SPI_CHANNEL) |= DMAMUX_CHCFG_ENBL_MASK;
+}
+
+void dma_spi_tx(void* src, uint32_t size)
+{
+    // Hang for a while if the dma is busy - Don't shred any transfers
+    while(DMA0->DMA[DMA_SPI_CHANNEL].DSR_BCR & DMA_DSR_BCR_BSY_MASK);
+
+    // Close out any errors/transactions
+    DMA0->DMA[DMA_SPI_CHANNEL].DSR_BCR |= DMA_DSR_BCR_DONE_MASK;
+    DMA0->DMA[DMA_SPI_CHANNEL].DSR_BCR |= DMA_DSR_BCR_DONE_MASK;
+    // Set start register
+    DMA0->DMA[DMA_SPI_CHANNEL].SAR = (uint32_t)src;
+    DMA0->DMA[DMA_SPI_CHANNEL].DAR = (uint32_t)&(SPI0->DL);
+    DMA0->DMA[DMA_SPI_CHANNEL].DSR_BCR = DMA_DSR_BCR_BCR(size);
+    DMA0->DMA[DMA_SPI_CHANNEL].DCR = DMA_DCR_CS_MASK | // Enable Cycle Steal
+                                     DMA_DCR_SINC_MASK |
+                                     DMA_DCR_D_REQ_MASK | // Disable hardware requests on completion
+                                     DMA_DCR_ERQ_MASK |
+                                     DMA_DCR_SSIZE(1) |
+                                     DMA_DCR_DSIZE(1); // 32 bit copies
+}
+
+void dma_spi_tx_wait(void* src, uint32_t size)
+{
+    dma_spi_tx(src,size);
+    while(DMA0->DMA[DMA_SPI_CHANNEL].DSR_BCR & DMA_DSR_BCR_BSY_MASK);    
+}
 uint32_t dma_transfer_complete(void)
 {
-    //uint32_t dma_res_done =  (DMA0->DMA[DMA_ADC_RESULT_CHANNEL].DSR_BCR & DMA_DSR_BCR_DONE_MASK);
-    uint32_t dma_trig_done =  (DMA0->DMA[DMA_ADC_TRIGGER_CHANNEL].DSR_BCR & DMA_DSR_BCR_DONE_MASK);
-    return (dma_trig_done);
+    uint32_t dma_res_done =  (DMA0->DMA[DMA_ADC_RESULT_CHANNEL].DSR_BCR & DMA_DSR_BCR_DONE_MASK);
+    //uint32_t dma_trig_done =  (DMA0->DMA[DMA_ADC_TRIGGER_CHANNEL].DSR_BCR & DMA_DSR_BCR_DONE_MASK);
+    return (dma_res_done);
 }
 
 uint32_t dma_in_error(void)
@@ -88,5 +120,5 @@ uint32_t dma_in_error(void)
 void dma_restart(void)
 {
     configure_adc_read();
-    configure_adc_trigger();
+    //configure_adc_trigger();
 }

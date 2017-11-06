@@ -5,6 +5,7 @@
 #include "systick.h"
 #include "adc.h"
 #include "dma.h"
+#include "lcd.h"
 #include "usb_serial.h"
 #include "adc_proc.h"
 #include <stdio.h>
@@ -21,18 +22,17 @@ typedef struct {
 
 static void idle_init()
 {
-    // Enable PORTC clock
-    SIM->SCGC5 = SIM_SCGC5_PORTC_MASK;
     // Configure PORTC pinmux
     PORTC->PCR[5] = PORT_PCR_MUX(1U);
     // Set LED direction
     PTC->PDDR |= LED;
     //PTC->PSOR = LED;
+    lcd_init();
 }
 
 static void idle_poll()
 {
-    PTC->PTOR = LED;    
+    PTC->PTOR = LED;
 }
 
 static task_t task_table[] = {
