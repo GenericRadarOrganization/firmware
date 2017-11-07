@@ -4,10 +4,11 @@
 #include "MKL26Z4.h"
 #include "config.h"
 
-uint16_t adc_buffer[ADC_BUFFER_SIZE];
+int16_t* adc_safe_buffer;
 
 void adc_init(void);
 
 void adc_startread(void);
+void adc_restartread(void);
 
 #endif

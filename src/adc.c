@@ -5,7 +5,10 @@
 #include "config.h"
 #include <string.h>
 
-uint16_t adc_buffer[ADC_BUFFER_SIZE];
+int16_t adc_buffer_a[ADC_BUFFER_SIZE];
+int16_t adc_buffer_b[ADC_BUFFER_SIZE];
+
+int16_t* adc_safe_buffer;
 
 /* adc_init configures the ADC for continuous hardware triggering and DMA reads */
 void adc_init(void){
@@ -22,7 +25,8 @@ void adc_init(void){
     ADC0->CFG1 = ADC_CFG1_MODE(1) | ADC_CFG1_ADIV(1) | ADC_CFG1_ADICLK(0); // ADC clock 24/2MHz
     ADC0->CFG2 = ADC_CFG2_ADHSC_MASK;
 
-    memset((uint16_t*)adc_buffer,10,sizeof(adc_buffer));
+    memset((uint16_t*)adc_buffer_a,0,sizeof(adc_buffer_a));
+    memset((uint16_t*)adc_buffer_b,0,sizeof(adc_buffer_b));
 
     PIT->MCR = 0;
     PIT->CHANNEL[0].LDVAL = 500; //24ksps
@@ -31,7 +35,20 @@ void adc_init(void){
 }
 
 void adc_startread(void){
-    ADC0->SC1[0] = 0x1A;
-    dma_conf_adc_read(&adc_buffer[0], ADC_BUFFER_SIZE);
+    ADC0->SC1[0] = 15; // 0x1A for temp sensor
+    adc_safe_buffer = adc_buffer_b;
+    dma_conf_adc_read(&adc_buffer_a[0], ADC_BUFFER_SIZE);
     //dma_conf_adc_trigger(0x1A);
+}
+
+// This implements buffer pingponging
+void adc_restartread(void){
+    if(adc_safe_buffer==adc_buffer_a)
+    {
+        adc_safe_buffer=adc_buffer_b;
+        dma_restart(adc_buffer_a);
+    }else{
+        adc_safe_buffer=adc_buffer_a;
+        dma_restart(adc_buffer_b);
+    }
 }

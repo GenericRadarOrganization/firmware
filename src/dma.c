@@ -3,7 +3,7 @@
 #include "config.h"
 
 static uint32_t adc_sc1_val;
-static uint16_t* read_dest;
+static int16_t* read_dest;
 static uint32_t read_size;
 
 void dma_init(void)
@@ -43,7 +43,7 @@ static void configure_adc_read()
 }
 
 // Hardcoded method for enabling the ADC DMA requests
-void dma_conf_adc_read(uint16_t* dest, uint32_t size)
+void dma_conf_adc_read(int16_t* dest, uint32_t size)
 {
     read_dest = dest;
     read_size = size;
@@ -117,8 +117,10 @@ uint32_t dma_in_error(void)
     return (dma_res_error|dma_trig_error)!=0;
 }
 
-void dma_restart(void)
+void dma_restart(int16_t* dest)
 {
+    // Set the destination
+    read_dest = dest;
     configure_adc_read();
     //configure_adc_trigger();
 }

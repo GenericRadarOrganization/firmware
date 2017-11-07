@@ -9,6 +9,7 @@
 #include "usb_serial.h"
 #include "adc_proc.h"
 #include "gui.h"
+#include "buttons.h"
 #include <stdio.h>
 
 #define LED  (1U << 5)
@@ -36,9 +37,10 @@ static void idle_poll()
 }
 
 static task_t task_table[] = {
+    {button_init,button_loop,0,0},
     {idle_init,idle_poll,0,500},
     {adc_proc_init,adc_proc_loop,0,10},
-    {gui_init,gui_loop,0,20}
+    {gui_init,gui_loop,0,100}
 };
 
 void tsk_init(void){
