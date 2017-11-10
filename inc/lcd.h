@@ -100,4 +100,6 @@ uint16_t lcd_Color565(uint8_t r, uint8_t g, uint8_t b);
 
 void lcd_drawLine(int16_t x0, int16_t y0, int16_t x1, int16_t y1, uint16_t color);
 
+void lcd_drawChar(int16_t x, int16_t y, char c, uint16_t color, uint16_t bg, uint8_t size);
+void lcd_drawChars(uint16_t x, uint16_t y, char* c, uint8_t len, uint16_t color, uint16_t bg, uint8_t size);
 #endif

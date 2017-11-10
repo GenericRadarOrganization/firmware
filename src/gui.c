@@ -89,7 +89,8 @@ void gui_init(void)
     lcd_fillScreen(ST7735_RED);
     drawvector(cat,8,32,32,ST7735_WHITE);
     drawvector(whiskers,6,0,32,ST7735_WHITE);
-
+    lcd_drawChars(38,120,"GRO",sizeof("GRO"),ST7735_WHITE,ST7735_WHITE,3);
+    lcd_drawChars(5,150,"We can't pick a name",sizeof("We can't pick a name"),ST7735_WHITE,ST7735_WHITE,1);
     // Set up state variables
     splashscreen_enter_time = millis();
     state = GUI_SPLASHSCREEN;

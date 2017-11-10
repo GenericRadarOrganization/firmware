@@ -4,6 +4,7 @@
 #include "systick.h"
 #include "debug.h"
 #include "config.h"
+#include "font.h"
 
 #include <stdlib.h>
 
@@ -464,4 +465,44 @@ void lcd_drawLine(int16_t x0, int16_t y0, int16_t x1, int16_t y1,
   } else {
     lcd_writeLine(x0, y0, x1, y1, color);
   }
+}
+
+void lcd_drawChar(int16_t x, int16_t y, char c, uint16_t color, uint16_t bg, uint8_t size)
+{
+    uint8_t i, j;
+
+    if( (x >= _width)           ||
+        (y >= _height)          ||
+        ((x + 6*size - 1) < 0)  ||
+        ((y + 8*size - 1) < 0)){
+        return;
+    }
+
+    for(i=0;i<5;i++){
+        uint8_t line = font[c*5+i]; // Grab current line
+        for(j=0;j<8;j++, line>>=1){
+            if(line & 1) {
+                if(size == 1)
+                    lcd_drawPixel(x+i, y+j, color);
+                else
+                    lcd_fillRect(x+i*size,y+j*size,size,size,color);
+            }else if(bg != color){
+                if(size == 1)
+                lcd_drawPixel(x+i, y+j, bg);
+            else
+                lcd_fillRect(x+i*size,y+j*size,size,size,bg);
+            }
+        }
+    }
+    if(bg != color){
+        if(size==1) lcd_drawFastVLine(x+5,y,8,bg);
+        else        lcd_fillRect(x+5*size, y, size, 8*size, bg);
+    }
+}
+
+void lcd_drawChars(uint16_t x, uint16_t y, char* c, uint8_t len, uint16_t color, uint16_t bg, uint8_t size){
+    int i;
+    for(i=0;i<len;i++){
+        lcd_drawChar(x+i*6*size,y,c[i],color,bg,size);
+    }
 }
