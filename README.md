@@ -17,7 +17,7 @@ Firmware for the teensy-lc microcontroller board.
    * Must have a configurable, consistent output period
    * TBD
 2. Down-Mixed Waveform Input:
-   * Must have a confirugable, consisten sample period
+   * Must have a configurable, consistent sample period
    * Must alternate between capture and compute phases
    * Should use DMA channel to collect ADC data
    * TBD
