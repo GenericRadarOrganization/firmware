@@ -2,6 +2,7 @@
 #include "systick.h"
 #include "tsk.h"
 #include "adc.h"
+#include "dac.h"
 #include "dma.h"
 #include "config.h"
 
@@ -36,6 +37,8 @@ int main(void)
     dma_init();
     adc_init();
     usb_init();
+    dac_init();
+
     SPI0->C1 = SPI_C1_SPE_MASK | SPI_C1_MSTR_MASK;
     SPI0->C2 = 0;
     //SPI0->C2 |= SPI_C2_MODFEN_MASK; // SPI_C2_TXDMAE_MASK

@@ -29,7 +29,7 @@ void adc_init(void){
     memset((uint16_t*)adc_buffer_b,0,sizeof(adc_buffer_b));
 
     PIT->MCR = 0;
-    PIT->CHANNEL[0].LDVAL = 500; //24ksps
+    PIT->CHANNEL[0].LDVAL = 4000; //24ksps
     PIT->CHANNEL[0].TCTRL = PIT_TCTRL_TEN_MASK; // Enable PIT timer
     SIM->SOPT7 |= SIM_SOPT7_ADC0ALTTRGEN_MASK | SIM_SOPT7_ADC0TRGSEL(4);
 }

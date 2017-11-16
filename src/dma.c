@@ -2,7 +2,6 @@
 #include "MKL26Z4.h"
 #include "config.h"
 
-static uint32_t adc_sc1_val;
 static int16_t* read_dest;
 static uint32_t read_size;
 
@@ -13,18 +12,18 @@ void dma_init(void)
     SIM->SCGC6 |= SIM_SCGC6_DMAMUX_MASK;
 }
 
-static void configure_adc_trigger()
+static void configure_dac_out(uint16_t* src)
 {
     DMA0->DMA[DMA_ADC_TRIGGER_CHANNEL].DSR_BCR |= DMA_DSR_BCR_DONE_MASK;
     DMA0->DMA[DMA_ADC_TRIGGER_CHANNEL].DSR_BCR |= DMA_DSR_BCR_DONE_MASK;
-    DMA0->DMA[DMA_ADC_TRIGGER_CHANNEL].SAR = (uint32_t)(&adc_sc1_val); // Transfer from out adc sc1 value
-    DMA0->DMA[DMA_ADC_TRIGGER_CHANNEL].DAR = (uint32_t)&(ADC0->SC1[0]); // to ADC0 sc1
-    DMA0->DMA[DMA_ADC_TRIGGER_CHANNEL].DSR_BCR = DMA_DSR_BCR_BCR(512*4); // Set the byte count (size of dest ptr*2)
+    DMA0->DMA[DMA_ADC_TRIGGER_CHANNEL].SAR = (uint32_t)(&src); // Transfer from out adc sc1 value
+    DMA0->DMA[DMA_ADC_TRIGGER_CHANNEL].DAR = (uint32_t)(&(DAC0->DAT[0].DATL)); // to ADC0 sc1
+    DMA0->DMA[DMA_ADC_TRIGGER_CHANNEL].DSR_BCR = DMA_DSR_BCR_BCR(512*2); // Set the byte count (size of dest ptr*2)
     DMA0->DMA[DMA_ADC_TRIGGER_CHANNEL].DCR = DMA_DCR_CS_MASK | // Enable Cycle Steal
                                              DMA_DCR_D_REQ_MASK | // Disable hardware requests on completion
                                              DMA_DCR_ERQ_MASK |
-                                             DMA_DCR_SSIZE(0) |
-                                             DMA_DCR_DSIZE(0); // Enable peripheral request
+                                             DMA_DCR_SSIZE(1) |
+                                             DMA_DCR_DSIZE(1); // Enable peripheral request
 }
 
 static void configure_adc_read()
@@ -55,15 +54,10 @@ void dma_conf_adc_read(int16_t* dest, uint32_t size)
     DMAMUX0_CHCFG(DMA_ADC_RESULT_CHANNEL) |= DMAMUX_CHCFG_ENBL_MASK;
 }
 
-void dma_conf_adc_trigger(uint32_t sc1_val)
+void dma_conf_dac_out(uint16_t* src)
 {
-    adc_sc1_val = sc1_val; // Save off the sc1 config
     DMAMUX0_CHCFG(DMA_ADC_TRIGGER_CHANNEL) = 0; // Set full low for reset
-    configure_adc_trigger(sc1_val);
-    PIT->MCR = 0;
-    PIT->CHANNEL[0].LDVAL = 500; //24ksps
-    PIT->CHANNEL[0].TCTRL = PIT_TCTRL_TEN_MASK; // Enable PIT timer
-
+    configure_dac_out(src);
     DMAMUX0_CHCFG(DMA_ADC_TRIGGER_CHANNEL) = DMAMUX_CHCFG_SOURCE(60) | DMAMUX_CHCFG_TRIG_MASK;
     DMAMUX0_CHCFG(DMA_ADC_TRIGGER_CHANNEL) |= DMAMUX_CHCFG_ENBL_MASK;
     //NVIC_ClearPendingIRQ(PIT_IRQn);

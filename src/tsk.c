@@ -4,6 +4,7 @@
 #include "helpers.h"
 #include "systick.h"
 #include "adc.h"
+#include "dac.h"
 #include "dma.h"
 #include "lcd.h"
 #include "usb_serial.h"
@@ -34,6 +35,7 @@ static void idle_init()
 static void idle_poll()
 {
     PTC->PTOR = LED;
+    dac_write((1<<12)/2);
 }
 
 static task_t task_table[] = {

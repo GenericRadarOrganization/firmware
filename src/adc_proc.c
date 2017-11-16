@@ -6,6 +6,8 @@
 #include "usb_serial.h"
 #include <stdio.h>
 
+static float freq;
+
 void adc_proc_init(void)
 {
     adc_startread();
@@ -14,49 +16,55 @@ void adc_proc_init(void)
 void adc_proc_loop(void)
 {
     uint32_t i;
-    int16_t average = 0;
+    float average = 0;
     uint16_t crossings[10];
     uint16_t crossing_cnt = 0;
-    uint16_t average_period = 0;
+    float average_period = 0.0;
     if(dma_transfer_complete()){
-        
         // Determine average of input wave
         for(i=0;i<ADC_BUFFER_SIZE;i++)
         {
-            average+=adc_safe_buffer[i]/ADC_BUFFER_SIZE;
-        }
-        //debug_printf("Average: %i\n", average);
-
-        // Subtract the average from every value
-        for(i=0;i<ADC_BUFFER_SIZE;i++)
-        {
-            adc_safe_buffer[i]-=average;
+            average+=((float)adc_safe_buffer[i])/((float)ADC_BUFFER_SIZE);
         }
 
         // Find zero crossings
         for(i=0;i<ADC_BUFFER_SIZE-1;i++)
         {
             if(crossing_cnt<10){
-                if(adc_safe_buffer[i]*adc_safe_buffer[i+1]<0){
+                if(((float)adc_safe_buffer[i]-average)*((float)adc_safe_buffer[i+1]-average)<0){
                     crossings[crossing_cnt]=i;
                     crossing_cnt++;
                 }
             }
         }
 
-        // Find average period from crossings
-        if(crossing_cnt>0){
-            for(i=0;i<crossing_cnt-1;i++)
+        // Find average period from crossings (technically the half-period)
+        if(crossing_cnt>2){ // Need at least three crossings to work accurately
+            debug_printf("Crossing count %d\n", crossing_cnt);
+            for(i=0;i<(crossing_cnt-2);i++) // One execution for three crossings, 8 for 10
             {
-                average_period+=(crossings[i+1]-crossings[i])/(crossing_cnt-1);
+                //debug_printf("run\n",crossings[i]);
+                average_period+=(float)(crossings[i+2]-crossings[i]);
             }
+            average_period/=(float)(crossing_cnt-2); // Divide by the number of periods exracted from above
+            //average_period-=1.0f;
+            //debug_printf("%d\n",crossings[i]);
+
+            //debug_printf("Average period: %.2f\n",average_period);
+
+            freq = 6000.0 / average_period;
+
+            debug_printf("Average freq(Hz): %d\n",(uint16_t)(freq+0.5));
         }
-        
-        //debug_printf("Average period: %d\n",average_period);
         adc_restartread();
     }
     if(dma_in_error()){
         debug_printf("Fack.\n");
         adc_restartread();
     }
+}
+
+uint16_t adc_proc_get_freq(void)
+{
+    return (uint16_t)(freq+0.5);
 }

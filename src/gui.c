@@ -4,7 +4,10 @@
 #include "debug.h"
 #include "buttons.h"
 #include "systick.h"
+#include "adc_proc.h"
 #include "MKL26Z4.h"
+
+#include <stdio.h>
 
 #define ST7735_GRAY lcd_Color565(180,180,180)
 
@@ -99,6 +102,8 @@ void gui_init(void)
 void gui_loop(void)
 {
     uint8_t buttons = button_state();
+    char strbuff[5];
+    uint8_t charcnt;
 
     // Let's run the GUI state machine!
     switch(state){
@@ -113,6 +118,9 @@ void gui_loop(void)
             }
             break;
         case GUI_IDLE:
+            charcnt = snprintf(strbuff,5,"%04d",adc_proc_get_freq());
+            lcd_drawChars(5,5,strbuff,charcnt,ST7735_CYAN,ST7735_BLACK,3);
+            lcd_drawChars(3*6*4+5,12,"Hz",2,ST7735_CYAN,ST7735_BLACK,2);
             drawwave(0,128,adc_safe_buffer,ADC_BUFFER_SIZE,ST7735_YELLOW);
             break;
     }
