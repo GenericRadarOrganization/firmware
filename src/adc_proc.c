@@ -3,7 +3,6 @@
 #include "adc.h"
 #include "dma.h"
 #include "debug.h"
-#include "usb_serial.h"
 #include <stdio.h>
 
 static float freq;

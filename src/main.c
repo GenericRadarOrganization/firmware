@@ -13,7 +13,7 @@
 
 int main(void)
 {
-    SIM->SCGC4 |= SIM_SCGC4_USBOTG_MASK | SIM_SCGC4_SPI0_MASK;
+    SIM->SCGC4 |= SIM_SCGC4_SPI0_MASK;
     SIM->SCGC5 |= SIM_SCGC5_PORTC_MASK | SIM_SCGC5_PORTD_MASK;
 
     PORTD->PCR[1] = PORT_PCR_MUX(2U); //sck
@@ -36,7 +36,9 @@ int main(void)
     systick_init();
     dma_init();
     adc_init();
+    #ifdef ENABLE_USB_DEBUG
     usb_init();
+    #endif
     dac_init();
 
     SPI0->C1 = SPI_C1_SPE_MASK | SPI_C1_MSTR_MASK;

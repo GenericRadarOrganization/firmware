@@ -7,7 +7,6 @@
 #include "dac.h"
 #include "dma.h"
 #include "lcd.h"
-#include "usb_serial.h"
 #include "adc_proc.h"
 #include "gui.h"
 #include "buttons.h"

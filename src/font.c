@@ -1,4 +1,8 @@
 #include "font.h"
+
+
+// With any luck, making this a const will place it in ROM
+// (And according to main.lst it is)
 const char font[256*5] = {
 	0x00, 0x00, 0x00, 0x00, 0x00,
 	0x3E, 0x5B, 0x4F, 0x5B, 0x3E,

@@ -10,12 +10,16 @@ uint8_t button_flags;
 
 void button_init(void)
 {
+    // Ensure PORTB is gated on
     SIM->SCGC5 |= SIM_SCGC5_PORTB_MASK;
+
+    // Configure all the pinmuxing for the buttons
     PORTB->PCR[0] = PORT_PCR_MUX(1) | PORT_PCR_PE_MASK | PORT_PCR_PS_MASK;
     PORTB->PCR[1] = PORT_PCR_MUX(1) | PORT_PCR_PE_MASK | PORT_PCR_PS_MASK;
     PORTB->PCR[2] = PORT_PCR_MUX(1) | PORT_PCR_PE_MASK | PORT_PCR_PS_MASK;
     PORTB->PCR[3] = PORT_PCR_MUX(1) | PORT_PCR_PE_MASK | PORT_PCR_PS_MASK;
 
+    // Zero out history and button flags
     memset(history,0,sizeof(history));
     button_flags = 0;
 }
@@ -39,6 +43,7 @@ uint8_t button_state(void)
 {
     return button_flags;
 }
+
 void button_ack(uint8_t mask)
 {
     button_flags &= ~(mask);
