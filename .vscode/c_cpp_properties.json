@@ -48,18 +48,24 @@
         {
             "name": "Win32",
             "includePath": [
-                "C:/Program Files (x86)/Microsoft Visual Studio 14.0/VC/include",
-                "${workspaceRoot}"
+                "C:/Program Files (x86)/GNU Tools ARM Embedded/6 2017-q2-update/arm-none-eabi/include/c++/6.3.1",
+                "C:/Program Files (x86)/GNU Tools ARM Embedded/6 2017-q2-update/arm-none-eabi/include",
+                "C:/Program Files (x86)/GNU Tools ARM Embedded/6 2017-q2-update/lib/gcc/arm-none-eabi/6.3.1/include",
+                "${workspaceRoot}",
+                "${workspaceRoot}/inc"
             ],
             "defines": [
-                "_DEBUG",
-                "UNICODE"
+                "F_CPU=48000000",
+                "__MKL26Z64__"
             ],
             "intelliSenseMode": "msvc-x64",
             "browse": {
                 "path": [
-                    "C:/Program Files (x86)/Microsoft Visual Studio 14.0/VC/include/*",
-                    "${workspaceRoot}"
+                    "${workspaceRoot}",
+                    "${workspaceRoot}/inc",
+                    "C:/Program Files (x86)/GNU Tools ARM Embedded/6 2017-q2-update/lib/gcc/arm-none-eabi/6.3.1/include",
+                    "C:/Program Files (x86)/GNU Tools ARM Embedded/6 2017-q2-update/lib/gcc/arm-none-eabi/6.3.1/include-fixed",
+                    "C:/Program Files (x86)/GNU Tools ARM Embedded/6 2017-q2-update/arm-none-eabi/include"
                 ],
                 "limitSymbolsToIncludedHeaders": true,
                 "databaseFilename": ""

@@ -4,9 +4,10 @@
 #include "fixup.h"
 #include "config.h"
 #include <string.h>
+#include <stdint.h>
 
 int16_t adc_buffer_a[ADC_BUFFER_SIZE];
-int16_t adc_buffer_b[ADC_BUFFER_SIZE];
+//int16_t adc_buffer_b[ADC_BUFFER_SIZE];
 
 int16_t* adc_safe_buffer;
 
@@ -26,29 +27,22 @@ void adc_init(void){
     ADC0->CFG2 = ADC_CFG2_ADHSC_MASK;
 
     memset((uint16_t*)adc_buffer_a,0,sizeof(adc_buffer_a));
-    memset((uint16_t*)adc_buffer_b,0,sizeof(adc_buffer_b));
+    //memset((uint16_t*)adc_buffer_b,0,sizeof(adc_buffer_b));
 
     PIT->MCR = 0;
-    PIT->CHANNEL[0].LDVAL = 4000; //24ksps
+    PIT->CHANNEL[0].LDVAL = 4000; //6ksps
     PIT->CHANNEL[0].TCTRL = PIT_TCTRL_TEN_MASK; // Enable PIT timer
-    SIM->SOPT7 |= SIM_SOPT7_ADC0ALTTRGEN_MASK | SIM_SOPT7_ADC0TRGSEL(4);
+    SIM->SOPT7 |= SIM_SOPT7_ADC0ALTTRGEN_MASK | SIM_SOPT7_ADC0TRGSEL(4); // Set up ADC hardware trigger
 }
 
 void adc_startread(void){
-    ADC0->SC1[0] = 15; // 0x1A for temp sensor
-    adc_safe_buffer = adc_buffer_b;
+    ADC0->SC1[0] = 15; // Set proper ADC channel for pinmux
+    adc_safe_buffer = adc_buffer_a; // A remnant of flip-flop buffering (We always use buffer a now)
     dma_conf_adc_read(&adc_buffer_a[0], ADC_BUFFER_SIZE);
     //dma_conf_adc_trigger(0x1A);
 }
 
 // This implements buffer pingponging
 void adc_restartread(void){
-    if(adc_safe_buffer==adc_buffer_a)
-    {
-        adc_safe_buffer=adc_buffer_b;
-        dma_restart(adc_buffer_a);
-    }else{
-        adc_safe_buffer=adc_buffer_a;
-        dma_restart(adc_buffer_b);
-    }
+    dma_restart(adc_buffer_a);
 }

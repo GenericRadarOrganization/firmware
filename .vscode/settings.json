@@ -8,6 +8,9 @@
         "string.h": "c",
         "fixup.h": "c",
         "config.h": "c",
-        "buttons.h": "c"
+        "buttons.h": "c",
+        "stdio.h": "c",
+        "stdint.h": "c",
+        "cstdint": "c"
     }
 }
