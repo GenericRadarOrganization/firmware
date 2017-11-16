@@ -150,6 +150,15 @@ static void commandList(uint8_t* addr)
 void lcd_init(void)
 {
     uint32_t waittime;
+
+    // Gate SPI clock
+    SIM->SCGC4 |= SIM_SCGC4_SPI0_MASK;
+
+    SPI0->C1 = SPI_C1_SPE_MASK | SPI_C1_MSTR_MASK;
+    SPI0->C2 = 0;
+    //SPI0->C2 |= SPI_C2_MODFEN_MASK; // SPI_C2_TXDMAE_MASK
+    SPI0->BR = SPI_BR_SPPR(1) | SPI_BR_SPR(0); // Divide by (2*2)
+    
     // Pull RS & CS low
     PTD->PCOR |= (1<<CS_NUM);
 

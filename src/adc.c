@@ -44,5 +44,5 @@ void adc_startread(void){
 
 // This implements buffer pingponging
 void adc_restartread(void){
-    dma_restart(adc_buffer_a);
+    dma_adc_restart(adc_buffer_a);
 }

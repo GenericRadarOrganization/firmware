@@ -4,6 +4,7 @@
 #include "adc.h"
 #include "dac.h"
 #include "dma.h"
+#include "lcd.h"
 #include "config.h"
 
 #include "usb_dev.h"
@@ -13,7 +14,6 @@
 
 int main(void)
 {
-    SIM->SCGC4 |= SIM_SCGC4_SPI0_MASK;
     SIM->SCGC5 |= SIM_SCGC5_PORTC_MASK | SIM_SCGC5_PORTD_MASK;
 
     PORTD->PCR[1] = PORT_PCR_MUX(2U); //sck
@@ -39,14 +39,9 @@ int main(void)
     #ifdef ENABLE_USB_DEBUG
     usb_init();
     #endif
+    lcd_init();
     dac_init();
-
-    SPI0->C1 = SPI_C1_SPE_MASK | SPI_C1_MSTR_MASK;
-    SPI0->C2 = 0;
-    //SPI0->C2 |= SPI_C2_MODFEN_MASK; // SPI_C2_TXDMAE_MASK
-    SPI0->BR = SPI_BR_SPPR(1) | SPI_BR_SPR(0); // Divide by (2*2)
     // Let the DMA do any setup work needed
-    dma_conf_spi();
     tsk_init();
     while(1){
         tsk_main();

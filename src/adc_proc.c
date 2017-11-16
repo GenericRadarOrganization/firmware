@@ -44,7 +44,7 @@ void adc_proc_loop(void)
 
         // We need at least 3 crossings for this method to work
         if(crossing_cnt>2){
-            debug_printf("Crossing count %d\n", crossing_cnt);
+            //debug_printf("Crossing count %d\n", crossing_cnt);
             for(i=0;i<(crossing_cnt-2);i++) // Set up such that the last run will have i+2 = crossing_cnt-1
             {
                 // Grab period across three crossings
@@ -54,7 +54,7 @@ void adc_proc_loop(void)
 
             freq = 6000.0 / average_period; // Frequency found is sample rate over period
 
-            debug_printf("Average freq(Hz): %d\n",(uint16_t)(freq+0.5));
+            //debug_printf("Average freq(Hz): %d\n",(uint16_t)(freq+0.5));
         }
         adc_restartread();
     }

@@ -10,9 +10,9 @@
 #include "adc_proc.h"
 #include "gui.h"
 #include "buttons.h"
+#include "config.h"
+#include "debug.h"
 #include <stdio.h>
-
-#define LED  (1U << 5)
 
 typedef struct {
     void (*init)(void);
@@ -33,8 +33,8 @@ static void idle_init()
 
 static void idle_poll()
 {
-    PTC->PTOR = LED;
-    dac_write((1<<12)/2);
+    debug_printf("DMA1 BCR %d\n",DMA0->DMA[1].DSR_BCR);
+    //dac_write((1<<12)/2);
 }
 
 static task_t task_table[] = {

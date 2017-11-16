@@ -12,6 +12,7 @@
         "stdio.h": "c",
         "stdint.h": "c",
         "cstdint": "c",
-        "stdarg.h": "c"
+        "stdarg.h": "c",
+        "systick.h": "c"
     }
 }
